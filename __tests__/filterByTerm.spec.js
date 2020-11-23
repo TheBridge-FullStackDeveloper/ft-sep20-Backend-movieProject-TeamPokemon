@@ -1,6 +1,5 @@
 //Test Birth Date
 describe("Check Birth Date", () => {
-
 	//Test ALL
 	test("test ALL [have 2 digits for day between 01-31, 2 digits for month between 01-12, 4 digits for year. All separated by /]", () => {
 		expect(validator.birthDate("01/01/2000")).toEqual(true);
@@ -96,7 +95,7 @@ describe("Check Birth Date", () => {
 	test("test leap-year [There should be max. 29 days in february]", () => {
 		expect(validator.birthDate("29/02/2000")).toEqual(true);
 	});
-
+});
 
 //TEST EMAIL
 describe("email_tests", () =>{
@@ -154,111 +153,107 @@ describe("email_tests", () =>{
 });
 
 
-
-
 // validator dni
 describe("Filter DNI numbers and let letter", () => {
 	//  1  españoles mayores 14
-	   test("test format 12345678A", () => {
-	
+	test("test format 12345678A", () => {
+
 		expect(validator.ValidateDni("12345678A")).toEqual(true);
-	
-	   });
-	
-	   test(" test format A12345678", () => {
-	
+
+	});
+
+	test(" test format A12345678", () => {
+
 		expect(validator.ValidateDni("A12345678")).toEqual(false);
-	
-	   });
-	
+
+	});
+
 	//  2 menores de 14 españoles
-	
-	   test("test format K+1234567A", () => {
-	
+
+	test("test format K+1234567A", () => {
+
 		expect(validator.ValidateDni("K+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -K+1234567A", () => {
-	
+
+	});
+
+	test("test format -K+1234567A", () => {
+
 		expect(validator.ValidateDni("-K+1234567A")).toEqual(false);
-	
-	   });
-	
-	   // 3   Españoles residentes en el extranjero sin DNI
-	
-	   test("test format L+1234567A", () => {
-	
+
+	});
+
+	// 3   Españoles residentes en el extranjero sin DNI
+
+	test("test format L+1234567A", () => {
+
 		expect(validator.ValidateDni("L+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -L+1234567A", () => {
-	
+
+	});
+
+	test("test format -L+1234567A", () => {
+
 		expect(validator.ValidateDni("-L+1234567A")).toEqual(false);
-	
-	   });
-	
-	   //  NIF que otorga la Agencia Tributaria a extranjeros que no tienen NIE
-	
-	   test("test format M+1234567A", () => {
-	
+
+	});
+
+	//  NIF que otorga la Agencia Tributaria a extranjeros que no tienen NIE
+
+	test("test format M+1234567A", () => {
+
 		expect(validator.ValidateDni("M+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -M+1234567A", () => {
-	
+
+	});
+
+	test("test format -M+1234567A", () => {
+
 		expect(validator.ValidateDni("-M+1234567A")).toEqual(false);
-	
-	   });
-	
-	   //  Extranjeros residentes en España e identificados por la Policía con un NIE, asignado hasta el 15 de julio de 2008. Los NIE, según la Orden de 7 de febrero de 1997, inicialmente constaban de X + 8 números + dígito de control, la Orden INT/2058/2008 redujo de 8 a 7 los números para que tuvieran la misma longitud que los NIF y CIF, pero esta Orden mantiene la validez de los NIE X de 8 dígitos anteriores ya asignados.
-	
-	   test("test format X+1234567A", () => {
-	
+
+	});
+
+	//  Extranjeros residentes en España e identificados por la Policía con un NIE, asignado hasta el 15 de julio de 2008. Los NIE, según la Orden de 7 de febrero de 1997, inicialmente constaban de X + 8 números + dígito de control, la Orden INT/2058/2008 redujo de 8 a 7 los números para que tuvieran la misma longitud que los NIF y CIF, pero esta Orden mantiene la validez de los NIE X de 8 dígitos anteriores ya asignados.
+
+	test("test format X+1234567A", () => {
+
 		expect(validator.ValidateDni("X+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -X+1234567A", () => {
-	
+
+	});
+
+	test("test format -X+1234567A", () => {
+
 		expect(validator.ValidateDni("-X+1234567A")).toEqual(false);
-	
-	   });
-	
-	   //   Extranjeros identificados por la Policía con un NIE, asignado desde el 16 de julio de 2008 (Orden INT/2058/2008, BOE del 15 de julio )
-	
-	   test("test format Y+1234567A", () => {
-	
+
+	});
+
+	//   Extranjeros identificados por la Policía con un NIE, asignado desde el 16 de julio de 2008 (Orden INT/2058/2008, BOE del 15 de julio )
+
+	test("test format Y+1234567A", () => {
+
 		expect(validator.ValidateDni("Y+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -Y+1234567A", () => {
-	
+
+	});
+
+	test("test format -Y+1234567A", () => {
+
 		expect(validator.ValidateDni("-Y+1234567A")).toEqual(false);
-	
-	   });
-	
-	   //  Letra reservada para cuando se agoten los 'Y' para Extranjeros identificados por la Policía con un NIE
-	
-	
-	   test("test format Z+1234567A", () => {
-	
+
+	});
+
+	//  Letra reservada para cuando se agoten los 'Y' para Extranjeros identificados por la Policía con un NIE
+
+
+	test("test format Z+1234567A", () => {
+
 		expect(validator.ValidateDni("Z+1234567A")).toEqual(true);
-	
-	   });
-	
-	   test("test format -Z+1234567A", () => {
-	
+
+	});
+
+	test("test format -Z+1234567A", () => {
+
 		expect(validator.ValidateDni("-Z+1234567A")).toEqual(false);
-	
-	   });
-	
+
+	});
+
 	//////////////////////////////////////////
-	
-	
-		});
-	
-	  //const filterByTerm = require("../src/filterByTerm");
+
+
+});
