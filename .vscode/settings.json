@@ -1,0 +1,10 @@
+{
+	"eslint.format.enable": true,
+	"editor.insertSpaces": false,
+	"editor.formatOnSave": true,
+	"eslint.alwaysShowStatus": true,
+	"eslint.run": "onSave",
+	"[javascript]": {
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	}
+}

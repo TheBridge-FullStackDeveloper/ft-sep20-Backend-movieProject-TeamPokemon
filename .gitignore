@@ -1,0 +1,12 @@
+# Node
+node_modules
+package-lock.json
+
+# Environment
+.env
+
+# MacOS
+.DS_Store
+
+# linter
+.eslintcache
