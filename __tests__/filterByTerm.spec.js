@@ -257,3 +257,63 @@ describe("Filter DNI numbers and let letter", () => {
 
 
 });
+
+//Validation Password
+describe("Comprobar password", () => {
+
+	test("Test format abcdefghe4 [have alpha, numbers, less than 10 characters and more than 3]", () => {
+
+		expect(validator.ValidatePass("abcdefghe4")).toEqual(true);
+
+	});
+	test("Test format ab [have alpha, doesn't have numbers, less than 3 length", () => {
+
+		expect(validator.ValidatePass("ab")).toEqual(false);
+
+	});
+	test("Test format Abbcc [have alpha, doesn't have numbers, starts with a capital letter] ", () => {
+
+		expect(validator.ValidatePass("Abbcc")).toEqual(false);
+
+	});
+	test("Test format abcdCfghesdsaf [more than 10 length] ", () => {
+
+		expect(validator.ValidatePass("abcdCfghesdsaf")).toEqual(false);
+
+	});
+	test("Test format 34566 [only number]", () => {
+
+		expect(validator.ValidatePass("34566")).toEqual(false);
+
+	});
+	test("Test format adcdef*[contains *] ", () => {
+
+		expect(validator.ValidatePass("adcdef*")).toEqual(false);
+
+	});
+	test("Test format absc_b [contains _]", () => {
+
+		expect(validator.ValidatePass("absc_b")).toEqual(false);
+
+	});
+	test("Test format absc-b [contains -] ", () => {
+
+		expect(validator.ValidatePass("absc-b")).toEqual(false);
+
+	});
+	test("Test format absc.b [contains .] ", () => {
+
+		expect(validator.validatePass("absc.b")).toEqual(false);
+
+	});
+	test("Test format absc,b [contains ,]", () => {
+
+		expect(validator.validatePass("absc,b")).toEqual(false);
+
+	});
+	test("Test format absc b [contains space]", () => {
+
+		expect(validator.validatePass("absc b")).toEqual(false);
+
+	});
+});
