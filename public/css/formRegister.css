@@ -1,0 +1,87 @@
+/* MOBILE FIRST */
+#formRegister {
+  position: absolute;
+  z-index: 500;
+  width: 100%;
+  top: -600px;
+}
+
+#formRegister #contUserData {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+#formRegister #contUserData .editElements:first-child {
+  border-bottom: 0px;
+  background-color: #d3d3d3bb;
+}
+
+#formRegister #contUserData .editElements:first-child #userPhotoFile {
+  display: none;
+}
+
+#formRegister #contUserData .editElements:nth-child(2) label {
+  padding-top: .3em;
+}
+
+#formRegister #contUserData .editElements {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  width: 100%;
+  border-bottom: 1px solid lightgray;
+  font-family: 'Ubuntu', sans-serif;
+}
+
+#formRegister #contUserData .editElements #userPhoto {
+  height: 33vh;
+  margin: auto;
+}
+
+#formRegister #contUserData .editElements label {
+  width: 100%;
+  background-color: ghostwhite;
+  color: grey;
+  padding: .2em .5em;
+  font-size: .9em;
+}
+
+#formRegister #contUserData .editElements input {
+  width: 100%;
+  font-size: 1.1em;
+  border: 0px;
+  padding: .4em .5em;
+}
+
+#formRegister #contUserData .editElements #NIFUser {
+  width: 70%;
+}
+
+#formRegister #contUserData .editElements:nth-child(5) label {
+  width: 20%;
+  padding-top: .8em;
+}
+
+#formRegister #btnsContainerRegister {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#formRegister #btnsContainerRegister button {
+  width: 50%;
+  padding: .5em .2em;
+  background-color: darkslateblue;
+  color: cornsilk;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1em;
+}
+
+/*FORMATO TABLET*/
+/*FORMATO LAPTOP-DESKTOP*/
+/*# sourceMappingURL=formRegister.css.map */

@@ -1,0 +1,101 @@
+/* LOGIN CONTROLS */
+#loginContainer {
+  width: 100%;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1em;
+}
+
+#loginContainer .editElements {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  width: 100%;
+  border-bottom: 1px solid lightgray;
+  font-family: 'Ubuntu', sans-serif;
+}
+
+#loginContainer .editElements label {
+  width: 100%;
+  background-color: ghostwhite;
+  color: grey;
+  padding: .2em .5em;
+  font-size: .9em;
+}
+
+#loginContainer .editElements input {
+  width: 100%;
+  border: 0px;
+  padding: .4em .5em;
+  font-size: 1.1em;
+}
+
+#loginContainer input[type=submit] {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 30%;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1em;
+  background-color: darkslateblue;
+  color: cornsilk;
+  margin: .5em auto;
+  padding: .5em .2em;
+  height: 8vh;
+}
+
+#loginContainer #signUp {
+  color: darkslateblue;
+  width: 35%;
+  margin: auto;
+  text-align: center;
+  padding: 1em 0%;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1em;
+}
+
+/*FORMATO TABLET*/
+@media only screen and (min-width: 768px) {
+  #loginContainer {
+    position: absolute;
+    top: 60vh;
+    height: 15vh;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    width: 100%;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    margin: auto;
+    font-size: 1.5em;
+  }
+  #loginContainer .editElements {
+    height: 50%;
+    width: 80%;
+    margin-top: .5em;
+  }
+  #loginContainer .editElements label {
+    height: 30%;
+  }
+  #loginContainer input[type=submit] {
+    height: 7vh;
+    margin-top: 1em;
+  }
+}
+
+/*FORMATO LAPTOP-DESKTOP*/
+@media only screen and (min-width: 1366px) {
+  #loginContainer {
+    top: 50vh;
+    width: 40%;
+    margin-left: 30%;
+  }
+  #loginContainer .editElements {
+    width: 100%;
+  }
+}
+/*# sourceMappingURL=login.css.map */

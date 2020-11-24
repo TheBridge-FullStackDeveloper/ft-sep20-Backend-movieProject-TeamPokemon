@@ -1,0 +1,63 @@
+#frame{
+    position: fixed;
+    display: flex;
+    flex-wrap: wrap;
+    top: 100px;
+    z-index: 666;
+    background-color: ghostwhite;
+    border: 2px solid gray;
+    width: 80%;
+    margin-left: 10%;
+    & #buttonsContainer{
+        width: 100%;
+        margin-top: 5%;
+        align-self: flex-end;
+        background-color: cornsilk;
+        & .buttons{
+            font: {
+                family: 'Ubuntu', sans-serif;
+                size: 1em;
+            }
+            background-color: darkslateblue;
+            color: cornsilk;
+        }
+        & #btnOk{
+            width: 59%;
+            margin-right: 1px;
+            padding: .5em .2em;
+        }
+        & #btnCancel{
+            width: 40%;
+            margin-left: 1px;
+            padding: .5em .2em;
+        }
+    }
+}
+.modal{
+    filter: blur(2px);
+    pointer-events: none;
+}
+.highText{
+    width: 80%;
+    margin: 5% auto;
+    font: {
+        family: 'Ubuntu', sans-serif;
+        size: 1.2em;
+    }
+}
+.id{
+    width: 80%;
+    margin: 2% auto;
+    font: {
+        family: 'Ubuntu', sans-serif;
+        size: .8em;
+    }
+}
+.mainText{
+    width: 80%;
+    margin: 3% auto;
+    font: {
+        family: 'Ubuntu', sans-serif;
+        size: 1em;
+    }
+}

@@ -1,0 +1,67 @@
+/*MAIN NAV-BAR*/
+#navBar {
+  position: fixed;
+  top: 0px;
+  width: 95%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  background-color: cornsilk;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1em;
+}
+
+#navBar #btnCreate {
+  width: 57%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: space-evenly;
+      -ms-flex-pack: space-evenly;
+          justify-content: space-evenly;
+  margin-right: 2px;
+  padding: .5em .2em;
+  background-color: darkslateblue;
+  color: cornsilk;
+}
+
+#navBar #btnCreate i {
+  color: cornsilk;
+}
+
+#navBar #btnGetBack {
+  width: 37%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: space-evenly;
+      -ms-flex-pack: space-evenly;
+          justify-content: space-evenly;
+  margin-left: 2px;
+  padding: .5em .2em;
+  background-color: darkslateblue;
+  color: cornsilk;
+}
+
+#navBar #btnGetBack i {
+  color: cornsilk;
+}
+
+/*FORMATO TABLET*/
+@media only screen and (min-width: 768px) {
+  #navBar {
+    font-size: 1.5em;
+  }
+  #navBar #btnCreate {
+    padding: .8em .2em;
+  }
+  #navBar #btnGetBack {
+    width: 39.5%;
+    padding: .8em .2em;
+  }
+}
+
+/*FORMATO LAPTOP-DESKTOP*/
+/*# sourceMappingURL=navBar.css.map */
