@@ -24,8 +24,8 @@ export class FormRegister{
                 const nodeFile = Factoria("input", [["type", "file"],
                                                     ["name", "photo"],
                                                     ["id", "userPhotoFile"]], "");
-                nodePhotoFrame.appendChild(nodeImage);
-                nodePhotoFrame.appendChild(nodeFile);
+                                                    
+                nodePhotoFrame.append(nodeImage, nodeFile);
             nodeContUserData.appendChild(nodePhotoFrame);
             //NAME EDIT CONTROL
             const nodeEditName = Factoria("div", [["class", "editElements"]], "");

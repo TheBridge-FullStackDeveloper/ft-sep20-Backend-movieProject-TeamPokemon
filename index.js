@@ -6,8 +6,13 @@ const bodyParser = require("body-parser");
 const corsEnable = require("cors");
 const cookieParser = require("cookie-parser");
 const validatorNode = require("./lib/validatorMoviesNode.class.js");
+//Se puede usar tambien el paquete npm request
+const fetch = require("node-fetch");
+const mongo = require("mongodb");
 //const JWT = require("./lib/jwt.js");
 
+const MongoClient = mongo.MongoClient;
+const url = "mongodb://localhost:27017/";
 //Creation of Express server
 const serverObj = express();
 
@@ -26,6 +31,8 @@ serverObj.use(corsEnable());
 serverObj.use(cookieParser());
 
 //Raise Express server
+
+// eslint-disable-next-line no-console
 serverObj.listen(listeningPort, () => console.log(`Server started listening on ${listeningPort}`));
 
 const validateRegisterData = (data) => {
@@ -80,8 +87,10 @@ const adultCheck = (date) => {
 	}
 	return ret;
 };*/
+
 //------------------ ROUTING -------------------//
 //REGISTER USER (POST)
+
 serverObj.post("register", (req, res) => {
 	//Validate new user data
 	const validationResults = validateRegisterData(req.body);
@@ -105,6 +114,91 @@ serverObj.post("/login", (req, res) => {
 		res.send({"res" : "0", "msg" : "Contraseña no válida"});
 	}
 	//Search the email among the users TODO
+});
+
+serverObj.get("/SearchMovies/:Title", (req, res) =>{
+
+	let FronTitle = req.params.Title;
+	// let Director = req.params.Director;
+	// let Year = req.params.Year;
+	// let Genre = req.params.Genre;
+	if (FronTitle !== null) {
+
+		//s= devuelve listado de peliculas que contienen esapalabra que buscaste
+		fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=4c909483`)
+			.then(res => res.json())
+			.then(data => {
+
+				//QUESTION s= me da un listado de toda las peliculas que contengan  mi palabra, entonces como hago esta comparacion, esto esta bien asi?
+				if (FronTitle === data.Title) {
+
+					let moviesFromObdb = {
+						"Title" : data.Title,
+						"Year" : data.Year,
+						"imdbID" : data.imdbID,
+						"Poster" : data.Poster
+					};
+
+					res.send({"msg" : "Movie Omdb Found", "MovieOmdb": moviesFromObdb});
+				} else {
+
+					try {
+						MongoClient.connect(url, (err, db) => {
+
+							if (err) {
+								throw err;
+							}
+
+							let ObjectDB = db.db("MyOwnMovies");
+
+							ObjectDB.collection("Movies").find({"title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
+
+								if (err) {
+									throw err;
+								}
+
+								let myMongoData = {
+
+									"Title" : result.Title,
+									"Director" : result.Director,
+									"Actors" : result.Actors,
+									"Genre" : result.Genre,
+									"Plot" : result.Plot,
+									"Runtime" : result.Runtime,
+									"Language" : result.Language,
+									"Released" : result.Released,
+								};
+
+								if (result){
+									res.send({"msg" : "Movie Found in Mongo", "resMongoDB" : myMongoData});
+								} else {
+									res.send({"msg": "This movie does not exist in Mongo"});
+								}
+
+								// eslint-disable-next-line no-console
+								// console.log(result.name);
+
+
+								db.close();
+
+							});
+						});
+
+
+					} catch (e) {
+						return {"msg" : "MongoDB error connection"};
+					}
+				}
+			})
+
+
+			.catch({"msg" : "ErrorConnection with Omdb"});
+	} else {
+
+		res.send({"msg" : "Empty Title"});
+	}
+
+
 });
 
 //LOGOUT (POST)
