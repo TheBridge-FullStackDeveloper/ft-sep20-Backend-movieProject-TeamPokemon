@@ -19,5 +19,24 @@ function SearchMovies(){
 
 	let getValueTitle = document.querySelector("#searcherInput");
 
-	fetch(`http://localhost:8080/SearchMovies/${getValueTitle}`);
+	fetch(`http://localhost:8080/SearchMovies/title/${getValueTitle}`)
+		.then(res => res.json())
+		.then(data => {
+
+			data.map(d => {
+				paintSearchedMovies(d);
+			});
+		});
+}
+
+function paintSearchedMovies(d, i){
+
+	document.querySelector("input").remove();
+	document.querySelector("button").remove();
+
+	let movieContainer = document.createElement("div");
+	movieContainer.id = `MovieContainer ${d[i]}`;
+
+	let titleMovie = document.createElement("h2");
+	titleMovie.id = d.Search[0];
 }
