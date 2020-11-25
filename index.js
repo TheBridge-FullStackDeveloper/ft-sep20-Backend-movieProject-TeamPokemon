@@ -12,15 +12,23 @@ client.connect(err => {
 
 //------------------ MODULES -------------------//
 const express = require("express");
+const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const corsEnable = require("cors");
 const cookieParser = require("cookie-parser");
 const validatorNode = require("./lib/validatorMoviesNode.class.js");
+const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
-
-//const JWT = require("./lib/jwt.js");
-const url = "mongodb://localhost:27017/";
+const MongoClient = require("mongodb").MongoClient;
+const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { "useNewUrlParser": true });
+client.connect(err => {
+	const collection = client.db("test").collection("devices");
+	// perform actions on the collection object
+	client.close();
+});
+//const url = "mongodb://localhost:27017/";
 //Creation of Express server
 const serverObj = express();
 
@@ -39,9 +47,7 @@ serverObj.use(corsEnable());
 serverObj.use(cookieParser());
 
 //Raise Express server
-
-// eslint-disable-next-line no-console
-serverObj.listen(listeningPort, () => console.log(`Server started listening on ${listeningPort}`));
+serverObj.listen(listeningPort);
 
 const validateRegisterData = (data) => {
 	//EMAIL
@@ -50,62 +56,79 @@ const validateRegisterData = (data) => {
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
-
 	//PASSWORD
 	validatorOutput = validator.ValidatePassword(data.password, /^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$/);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
-
 	//BIRTHDAY
 	validatorOutput = validator.ValidateDate(data.dateBirth);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
-
 	//NIF/NIE
 	validatorOutput = validator.ValidateNIF(data.nif);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
-
+	//PHONE
+	validatorOutput = validator.ValidatePhone(data.phone, /^(\+34 )*\d{9}$/);
+	if (!validatorOutput.ret){
+		return validatorOutput.msg;
+	}
 	return true;
 };
-/*
-const adultCheck = (date) => {
-	//Check out if new user is adult
-	let ret = {
-		"result" : false,
-		"msg" : []
-	};
-
-	const today = Date();
-	const todayMilliseconds = Date.parse(today);
-	const splitDate = date.split("-");
-	const adult = new Date(parseInt(splitDate[0]) + 18, parseInt(splitDate[1]) - 1, parseInt(splitDate[2]));
-	const adultMilliseconds = Date.parse(adult);
-	const diff = todayMilliseconds - adultMilliseconds;
-	if (diff >= 0) {
-		ret.result = true;
-	} else {
-		ret.msg.push({
-			"caption" : "Lo sentimos, pero debes ser mayor de edad para registrarte",
-			"class" : "highText"
-		});
-	}
-	return ret;
-};*/
 
 //------------------ ROUTING -------------------//
 //REGISTER USER (POST)
-
 serverObj.post("register", (req, res) => {
 	//Validate new user data
 	const validationResults = validateRegisterData(req.body);
 	if (validationResults !== true) {
 		res.send({"res" : 0, "msg" : validationResults.msg});
 	} else {
-		//Check out if user is already registered TODO
+		const conectionDB = mysql.createConnection({
+			"host": "localhost",
+			"user": "root",
+			"password": "root",
+			"database": "movieprojectdb"
+		});
+
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
+				});
+			});
+			prom.then(() => {
+				const sql = `SELECT USRID FROM users WHERE EMAIL LIKE '${req.body.email}'`;
+				conectionDB.query(sql, function (err, result) {
+					if (err){
+						throw err;
+					} else if (result.length){
+						//User found already in db
+						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
+					} else {
+						//Proceed to store user in db table
+						const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.password}', '${req.body.profile}', '${req.body.dateBirth}', '${req.body.nif}', '${req.body.phone}')`;
+						conectionDB.query(sql, function (err, result) {
+							if (err){
+								throw err;
+							} else {
+								res.send({"res" : "1", "msg" : "Usuario registrado!"});
+								
+							}
+						});
+					}
+				});
+			})
+				.catch((fail) => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
+		}
 	}
 });
 
@@ -121,7 +144,66 @@ serverObj.post("/login", (req, res) => {
 	if (!validator.ValidatePassword(req.body.pass, /^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$/)) {
 		res.send({"res" : "0", "msg" : "Contraseña no válida"});
 	}
-	//Search the email among the users TODO
+	//Look for the user name among current users
+	const conectionDB = mysql.createConnection({
+		"host": "localhost",
+		"user": "root",
+		"password": "root",
+		"database": "movieprojectdb"
+	});
+
+	if (conectionDB){
+		const prom = new Promise((resolve, reject) => {
+			conectionDB.connect(function(err) {
+				if (err) {
+					reject(err);
+				}
+				resolve();
+			});
+		});
+		prom.then(() => {
+			const sql = `SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE '${req.body.user}'`;
+			conectionDB.query(sql, function (err, result) {
+				if (err){
+					throw err;
+				} else if (result.length){
+					if (result[0].PASS === req.body.pass){
+						//Generate JWT
+						const Payload = {
+							"user" : req.body.user,
+							"profile" : result[0].USER_PROFILE,
+							"iat" : new Date()
+						};
+						const jwt = JWT(Payload);
+						//Grant access based on profile
+						switch (result[0].USER_PROFILE) {
+						case "admin":
+						{
+							//Access as administrator
+							res.cookie("JWT", jwt, {"httpOnly" : true})
+								.send({"res" : "1", "msg" : "admin"});
+							break;
+						}
+						case "user":
+						{
+							//Access as player
+							res.cookie("JWT", jwt, {"httpOnly" : true})
+								.send({"res" : "1", "msg" : "usuario"});
+							break;
+						}
+						}
+					} else {
+						res.send({"res" : "0", "msg" : "Contraseña inválida!"});
+					}
+				} else {
+					res.send({"res" : "0", "msg" : "Usuario no registrado!"});
+				}
+			});
+		})
+			.catch((fail) => {
+				res.send({"res" : "0", "msg" : "Unable to connect to database"});
+			});
+	}
 });
 
 serverObj.get("/loginG", (req, res) => {
@@ -132,10 +214,7 @@ serverObj.get("/login", async (req, res) => {
 	const {code} = req.query;
 	if (code) {
 		const user = await getGoogleUser(code);
-		// eslint-disable-next-line no-console
-		console.log(user);
 		res.redirect("/");
-		// res.send(user);
 	}
 });
 
@@ -155,24 +234,17 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 				//QUESTION s= me da un listado de toda las peliculas que contengan  mi palabra, entonces como hago esta comparacion, esto esta bien asi?
 				if (data.Search) {
 					res.send({"msg" : "Movies Omdb Found", "MovieOmdb": data.Search});
-
 				} else {
-
 					try {
 						MongoClient.connect(url, (err, db) => {
-
 							if (err) {
 								throw err;
 							}
-
 							let ObjectDB = db.db("MyOwnMovies");
-
 							ObjectDB.collection("Movies").find({"title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
-
 								if (err) {
 									throw err;
 								}
-
 								let myMongoData = {
 
 									"Title" : result.Title,
@@ -184,37 +256,24 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 									"Language" : result.Language,
 									"Released" : result.Released,
 								};
-
 								if (result){
 									res.send({"msg" : "Movie Found in Mongo", "resMongoDB" : myMongoData});
 								} else {
 									res.send({"msg": "This movie does not exist in Mongo"});
 								}
 
-								// eslint-disable-next-line no-console
-								// console.log(result.name);
-
-
 								db.close();
-
 							});
 						});
-
-
 					} catch (e) {
 						return {"msg" : "MongoDB error connection"};
 					}
 				}
 			})
-
-
 			.catch({"msg" : "ErrorConnection with Omdb"});
 	} else {
-
 		res.send({"msg" : "Empty Title"});
 	}
-
-
 });
 
 // serverObj.get();
@@ -224,7 +283,6 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 serverObj.post("/logout", (req, res) => {
 	//TODO
 });
-
 
 //OAUTH
 const {google} = require("googleapis");
@@ -280,6 +338,3 @@ async function getGoogleUser(code) {
 	}
 	return null;
 }
-
-// eslint-disable-next-line no-console
-// console.log(getGoogleAuthURL());
