@@ -1,12 +1,12 @@
 //------------------ GLOBALS -------------------//
 
-const MongoClient = require('mongodb').MongoClient;
+const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true });
+const client = new MongoClient(uri, { "useNewUrlParser": true });
 client.connect(err => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
+	const collection = client.db("test").collection("devices");
+	// perform actions on the collection object
+	client.close();
 });
 
 
@@ -18,10 +18,8 @@ const cookieParser = require("cookie-parser");
 const validatorNode = require("./lib/validatorMoviesNode.class.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
-const mongo = require("mongodb");
-//const JWT = require("./lib/jwt.js");
 
-const MongoClient = mongo.MongoClient;
+//const JWT = require("./lib/jwt.js");
 const url = "mongodb://localhost:27017/";
 //Creation of Express server
 const serverObj = express();
@@ -126,6 +124,20 @@ serverObj.post("/login", (req, res) => {
 	//Search the email among the users TODO
 });
 
+serverObj.get("/loginG", (req, res) => {
+	res.redirect(getGoogleAuthURL());
+});
+
+serverObj.get("/login", async (req, res) => {
+	const {code} = req.query;
+	if (code) {
+		const user = await getGoogleUser(code);
+		console.log(user);
+		res.redirect("/");
+		// res.send(user);
+	}
+});
+
 serverObj.get("/SearchMovies/:Title", (req, res) =>{
 
 	let FronTitle = req.params.Title;
@@ -208,3 +220,65 @@ serverObj.get();
 
 //LOGOUT (POST)
 //
+serverObj.post("/logout", (req, res) => {
+	//TODO
+});
+
+
+//OAUTH
+const {google} = require("googleapis");
+//import { google } from 'googleapis';
+let GOOGLE_CLIENT_SECRET="hgQOLqZ2MPLH-r0B9Glq5TdW";
+let GOOGLE_CLIENT_ID = "892702418247-bgj3ovrtauoh0i2ru4qs0j9tbg1rn1ma.apps.googleusercontent.com";
+const oauth2Client = new google.auth.OAuth2(
+	GOOGLE_CLIENT_ID,
+	GOOGLE_CLIENT_SECRET,
+	/*
+   * This is where Google will redirect the user after they
+   * give permission to your application
+   */
+	"http://localhost:8888/login"
+);
+function getGoogleAuthURL() {
+	/*
+     * Generate a url that asks permissions to the user's email and profile
+     */
+	const scopes = [
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://www.googleapis.com/auth/userinfo.email",
+	];
+	return oauth2Client.generateAuthUrl({
+		"access_type": "offline",
+		"prompt": "consent",
+		// If you only need one scope you can pass it as string
+		"scope": scopes
+	});
+}
+
+async function getGoogleUser(code) {
+	if (code) {
+		const { tokens } = await oauth2Client.getToken(code);
+		oauth2Client.setCredentials(tokens);
+		if (tokens.id_token && tokens.access_token) {
+			// Fetch the user's profile with the access token and bearer
+			try {
+
+				const res = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
+					"headers": {
+						"Authorization": `Bearer ${tokens.id_token}`
+					}
+				});
+				const googleUser = await res.json();
+				return googleUser;
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.log(error);
+				// throw new Error(error.message);
+			}
+		}
+	}
+	return null;
+}
+
+// eslint-disable-next-line no-console
+console.log(getGoogleAuthURL());
