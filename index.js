@@ -2,15 +2,14 @@
 
 //------------------ MODULES -------------------//
 const express = require("express");
-const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const corsEnable = require("cors");
 const cookieParser = require("cookie-parser");
 const validatorNode = require("./lib/validatorMoviesNode.class.js");
-const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
 const mongo = require("mongodb");
+//const JWT = require("./lib/jwt.js");
 
 const MongoClient = mongo.MongoClient;
 const url = "mongodb://localhost:27017/";
@@ -32,6 +31,7 @@ serverObj.use(corsEnable());
 serverObj.use(cookieParser());
 
 //Raise Express server
+
 // eslint-disable-next-line no-console
 serverObj.listen(listeningPort, () => console.log(`Server started listening on ${listeningPort}`));
 
@@ -42,82 +42,62 @@ const validateRegisterData = (data) => {
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
+
 	//PASSWORD
 	validatorOutput = validator.ValidatePassword(data.password, /^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$/);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
+
 	//BIRTHDAY
 	validatorOutput = validator.ValidateDate(data.dateBirth);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
+
 	//NIF/NIE
 	validatorOutput = validator.ValidateNIF(data.nif);
 	if (!validatorOutput.ret) {
 		return validatorOutput.msg;
 	}
-	//PHONE
-	validatorOutput = validator.ValidatePhone(data.phone, /^(\+34 )*\d{9}$/);
-	if (!validatorOutput.ret){
-		return validatorOutput.msg;
-	}
+
 	return true;
 };
+/*
+const adultCheck = (date) => {
+	//Check out if new user is adult
+	let ret = {
+		"result" : false,
+		"msg" : []
+	};
+
+	const today = Date();
+	const todayMilliseconds = Date.parse(today);
+	const splitDate = date.split("-");
+	const adult = new Date(parseInt(splitDate[0]) + 18, parseInt(splitDate[1]) - 1, parseInt(splitDate[2]));
+	const adultMilliseconds = Date.parse(adult);
+	const diff = todayMilliseconds - adultMilliseconds;
+	if (diff >= 0) {
+		ret.result = true;
+	} else {
+		ret.msg.push({
+			"caption" : "Lo sentimos, pero debes ser mayor de edad para registrarte",
+			"class" : "highText"
+		});
+	}
+	return ret;
+};*/
 
 //------------------ ROUTING -------------------//
 //REGISTER USER (POST)
-serverObj.post("/register", (req, res) => {
+
+serverObj.post("register", (req, res) => {
 	//Validate new user data
 	const validationResults = validateRegisterData(req.body);
 	if (validationResults !== true) {
 		res.send({"res" : 0, "msg" : validationResults.msg});
 	} else {
 		//Check out if user is already registered TODO
-		const conectionDB = mysql.createConnection({
-			"host": "localhost",
-			"user": "root",
-			"password": "root",
-			"database": "movieprojectdb"
-		});
-
-		if (conectionDB){
-			const prom = new Promise((resolve, reject) => {
-				conectionDB.connect(function(err) {
-					if (err) {
-						reject(err);
-					}
-					resolve();
-				});
-			});
-			prom.then(() => {
-				const sql = `SELECT USRID FROM users WHERE EMAIL LIKE '${req.body.email}'`;
-				conectionDB.query(sql, function (err, result) {
-					if (err){
-						//eslint-disable-next-line no-console
-						console.log("error de conexión a la bd");
-						throw err;
-					} else if (result.length){
-						//User found already in db
-						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
-					} else {
-						//Proceed to store user in db table
-						const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.password}', '${req.body.profile}', '${req.body.dateBirth}', '${req.body.nif}', '${req.body.phone}')`;
-						conectionDB.query(sql, function (err, result) {
-							if (err){
-								throw err;
-							} else {
-								res.send({"res" : "1", "msg" : "Usuario registrado!"});
-							}
-						});
-					}
-				});
-			})
-				.catch((fail) => {
-					//eslint-disable-next-line no-console
-					console.log("Could not connect to data base");
-				});
-		}
 	}
 });
 
@@ -133,67 +113,20 @@ serverObj.post("/login", (req, res) => {
 	if (!validator.ValidatePassword(req.body.pass, /^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$/)) {
 		res.send({"res" : "0", "msg" : "Contraseña no válida"});
 	}
+	//Search the email among the users TODO
+});
 
-	//Look for the user name among current users
-	const conectionDB = mysql.createConnection({
-		"host": "localhost",
-		"user": "root",
-		"password": "root",
-		"database": "movieprojectdb"
-	});
+serverObj.get("/loginG", (req, res) => {
+	res.redirect(getGoogleAuthURL());
+});
 
-	if (conectionDB){
-		const prom = new Promise((resolve, reject) => {
-			conectionDB.connect(function(err) {
-				if (err) {
-					reject(err);
-				}
-				resolve();
-			});
-		});
-		prom.then(() => {
-			const sql = `SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE '${req.body.user}'`;
-			conectionDB.query(sql, function (err, result) {
-				if (err){
-					throw err;
-				} else if (result.length){
-					if (result[0].PASS === req.body.pass){
-						//Generate JWT
-						const Payload = {
-							"user" : req.body.user,
-							"profile" : result[0].USER_PROFILE,
-							"iat" : new Date()
-						};
-						const jwt = JWT(Payload);
-						//Grant access based on profile
-						switch (result[0].USER_PROFILE) {
-						case "admin":
-						{
-							//Access as administrator
-							res.cookie("JWT", jwt, {"httpOnly" : true})
-								.send({"res" : "1", "msg" : "admin"});
-							break;
-						}
-						case "user":
-						{
-							//Access as player
-							res.cookie("JWT", jwt, {"httpOnly" : true})
-								.send({"res" : "1", "msg" : "usuario"});
-							break;
-						}
-						}
-					} else {
-						res.send({"res" : "0", "msg" : "Contraseña inválida!"});
-					}
-				} else {
-					res.send({"res" : "0", "msg" : "Usuario no registrado!"});
-				}
-			});
-		})
-			.catch((fail) => {
-				//eslint-disable-next-line no-console
-				console.log("Could not connect to data base");
-			});
+serverObj.get("/login", async (req, res) => {
+	const {code} = req.query;
+	if (code) {
+		const user = await getGoogleUser(code);
+		console.log(user);
+		res.redirect("/");
+		// res.send(user);
 	}
 });
 
@@ -286,3 +219,59 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 serverObj.post("/logout", (req, res) => {
 	//TODO
 });
+
+
+//OAUTH
+const {google} = require("googleapis");
+//import { google } from 'googleapis';
+let GOOGLE_CLIENT_SECRET="hgQOLqZ2MPLH-r0B9Glq5TdW";
+let GOOGLE_CLIENT_ID = "892702418247-bgj3ovrtauoh0i2ru4qs0j9tbg1rn1ma.apps.googleusercontent.com";
+const oauth2Client = new google.auth.OAuth2(
+	GOOGLE_CLIENT_ID,
+	GOOGLE_CLIENT_SECRET,
+	/*
+   * This is where Google will redirect the user after they
+   * give permission to your application
+   */
+	"http://localhost:8888/login"
+);
+function getGoogleAuthURL() {
+	/*
+     * Generate a url that asks permissions to the user's email and profile
+     */
+	const scopes = [
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://www.googleapis.com/auth/userinfo.email",
+	];
+	return oauth2Client.generateAuthUrl({
+		"access_type": "offline",
+		"prompt": "consent",
+		"scope": scopes, // If you only need one scope you can pass it as string
+	});
+}
+
+async function getGoogleUser(code) {
+	if (code) {
+		const { tokens } = await oauth2Client.getToken(code);
+		oauth2Client.setCredentials(tokens);
+		if (tokens.id_token && tokens.access_token) {
+			// Fetch the user's profile with the access token and bearer
+			try {
+
+				const res = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
+					"headers": {
+						"Authorization": `Bearer ${tokens.id_token}`
+					}
+				});
+				const googleUser = await res.json();
+				return googleUser;
+			} catch (error) {
+				console.log(error);
+				// throw new Error(error.message);
+			}
+		}
+	}
+	return null;
+}
+
+console.log(getGoogleAuthURL());
