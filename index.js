@@ -1,5 +1,15 @@
 //------------------ GLOBALS -------------------//
 
+const MongoClient = require('mongodb').MongoClient;
+const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true });
+client.connect(err => {
+  const collection = client.db("test").collection("devices");
+  // perform actions on the collection object
+  client.close();
+});
+
+
 //------------------ MODULES -------------------//
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -130,16 +140,9 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 			.then(data => {
 
 				//QUESTION s= me da un listado de toda las peliculas que contengan  mi palabra, entonces como hago esta comparacion, esto esta bien asi?
-				if (FronTitle === data.Title) {
+				if (data.Search) {
+					res.send({"msg" : "Movies Omdb Found", "MovieOmdb": data.Search});
 
-					let moviesFromObdb = {
-						"Title" : data.Title,
-						"Year" : data.Year,
-						"imdbID" : data.imdbID,
-						"Poster" : data.Poster
-					};
-
-					res.send({"msg" : "Movie Omdb Found", "MovieOmdb": moviesFromObdb});
 				} else {
 
 					try {
@@ -201,7 +204,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 
 });
 
+serverObj.get();
+
 //LOGOUT (POST)
-serverObj.post("/logout", (req, res) => {
-	//TODO
-});
+//
