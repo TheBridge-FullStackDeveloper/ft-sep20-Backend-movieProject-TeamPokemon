@@ -18,7 +18,7 @@ export class FormRegister{
         const nodeContUserData = Factoria("div", [["id", "contUserData"], ["class", "contUserData"]], "");
             //USER EMAIL CONTROL
             const nodeEditEmail = Factoria("div", [["class", "editElements"]], "");
-                let nodeLabelEdit = Factoria("label", [["for", "userQuiz"]], "Usuario (email):");
+                let nodeLabelEdit = Factoria("label", [["for", "userEmail"]], "Usuario (email):");
                 let nodeInputEdit = Factoria("input", [ ["type", "email"],
                                                     ["name", "userEmail"],
                                                     ["id", "userEmail"],
