@@ -1,134 +1,135 @@
-//const validator = require("../js/filterByTerm.js");
+const validator = require("../lib/validatorMovies.class");
 
 //TEST USER PHONE NUMBER
 describe("Test user phone number validation", () => {
+	const strRegEx = /^(\+34 )*\d{9}$/;
 	test("Test format +34 123456789", () => {
-		expect(validator.ValidatePhone("+34 123456789")).toEqual(true);
+		expect(validator.ValidatePhone("+34 123456789", strRegEx)).toEqual(true);
 	});
 	test("Test format 34 123456789", () => {
-		expect(validator.ValidatePhone("34 123456789")).toEqual(false);
+		expect(validator.ValidatePhone("34 123456789", strRegEx)).toEqual(false);
 	});
 	test("Test format +33 123456789", () => {
-		expect(validator.ValidatePhone("+33 123456789")).toEqual(false);
+		expect(validator.ValidatePhone("+33 123456789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 12345678", () => {
-		expect(validator.ValidatePhone("+34 12345678")).toEqual(false);
+		expect(validator.ValidatePhone("+34 12345678", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 -123456789", () => {
-		expect(validator.ValidatePhone("+34 -123456789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 -123456789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 1 23456789", () => {
-		expect(validator.ValidatePhone("+34 1 23456789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 1 23456789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 123-456-789", () => {
-		expect(validator.ValidatePhone("+34 123-456-789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 123-456-789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 123/456/789", () => {
-		expect(validator.ValidatePhone("+34 123/456/789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 123/456/789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 12345i789", () => {
-		expect(validator.ValidatePhone("+34 12345i789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 12345i789", strRegEx)).toEqual(false);
 	});
 	test("Test format +34 12345i789", () => {
-		expect(validator.ValidatePhone("+34 12345i789")).toEqual(false);
+		expect(validator.ValidatePhone("+34 12345i789", strRegEx)).toEqual(false);
 	});
 });
 //Test Birth Date
 describe("Check Birth Date", () => {
 	//Test ALL
 	test("test ALL [have 2 digits for day between 01-31, 2 digits for month between 01-12, 4 digits for year. All separated by /]", () => {
-		expect(validator.birthDate("01/01/2000")).toEqual(true);
+		expect(validator.ValidateDate("01/01/2000")).toEqual(true);
 	});
 
 	//Test Day
 	test("test DAY [contains 2 digits between 01-30]", () => {
-		expect(validator.birthDate("50/01/2000")).toEqual(false);
+		expect(validator.ValidateDate("50/01/2000")).toEqual(false);
 	});
 
 	//Test Month
 	test("test MONTH [contains 2 digits between 01-12]", () => {
-		expect(validator.birthDate("01/50/2000")).toEqual(false);
+		expect(validator.ValidateDate("01/50/2000")).toEqual(false);
 	});
 
 	//Test Year
 	test("test YEAR [contains 4 digits starting from 19 or 20]", () => {
-		expect(validator.birthDate("01/01/5555")).toEqual(false);
+		expect(validator.ValidateDate("01/01/5555")).toEqual(false);
 	});
 
 	//Test separation
 	test("test SLASH [Day, month and year are separated by a /]", () => {
-		expect(validator.birthDate("01-01-2000")).toEqual(false);
+		expect(validator.ValidateDate("01-01-2000")).toEqual(false);
 	});
 
 	//Test with text
 	test("test TEXT [There should not be any text]", () => {
-		expect(validator.birthDate("test")).toEqual(false);
+		expect(validator.ValidateDate("test")).toEqual(false);
 	});
 
 	//Test days of the month
 	//Test January
 	test("test January [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/01/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/01/2000")).toEqual(false);
 	});
 
 	//Test February
 	test("test February [There should be max. 28 days]", () => {
-		expect(validator.birthDate("30/02/2000")).toEqual(false);
+		expect(validator.ValidateDate("30/02/2000")).toEqual(false);
 	});
 
 	//Test March
 	test("test March [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/03/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/03/2000")).toEqual(false);
 	});
 
 	//Test April
 	test("test April [There should be max. 30 days]", () => {
-		expect(validator.birthDate("31/04/2000")).toEqual(false);
+		expect(validator.ValidateDate("31/04/2000")).toEqual(false);
 	});
 
 	//Test May
 	test("test May [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/05/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/05/2000")).toEqual(false);
 	});
 
 	//Test June
 	test("test June [There should be max. 30 days]", () => {
-		expect(validator.birthDate("31/06/2000")).toEqual(false);
+		expect(validator.ValidateDate("31/06/2000")).toEqual(false);
 	});
 
 	//Test July
 	test("test July [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/07/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/07/2000")).toEqual(false);
 	});
 
 	//Test August
 	test("test August [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/08/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/08/2000")).toEqual(false);
 	});
 
 	//Test September
 	test("test September [There should be max. 30 days]", () => {
-		expect(validator.birthDate("31/09/2000")).toEqual(false);
+		expect(validator.ValidateDate("31/09/2000")).toEqual(false);
 	});
 
 	//Test October
 	test("test October [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/10/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/10/2000")).toEqual(false);
 	});
 
 	//Test November
 	test("test November [There should be max. 30 days]", () => {
-		expect(validator.birthDate("31/11/2000")).toEqual(false);
+		expect(validator.ValidateDate("31/11/2000")).toEqual(false);
 	});
 
 	//Test December
 	test("test December [There should be max. 31 days]", () => {
-		expect(validator.birthDate("32/12/2000")).toEqual(false);
+		expect(validator.ValidateDate("32/12/2000")).toEqual(false);
 	});
 
 	//Test leap-year
 	test("test leap-year [There should be max. 29 days in february]", () => {
-		expect(validator.birthDate("29/02/2000")).toEqual(true);
+		expect(validator.ValidateDate("29/02/2000")).toEqual(true);
 	});
 });
 
@@ -191,100 +192,58 @@ describe("email_tests", () =>{
 // validator dni
 describe("Filter DNI numbers and let letter", () => {
 	//  1  españoles mayores 14
-	test("test format 12345678A", () => {
+	test("test format 12345678Z", () => {
 
-		expect(validator.ValidateDni("12345678A")).toEqual(true);
+		expect(validator.ValidateNIF("12345678Z")).toEqual(true);
 
 	});
 
 	test(" test format A12345678", () => {
 
-		expect(validator.ValidateDni("A12345678")).toEqual(false);
-
-	});
-
-	//  2 menores de 14 españoles
-
-	test("test format K+1234567A", () => {
-
-		expect(validator.ValidateDni("K+1234567A")).toEqual(true);
-
-	});
-
-	test("test format -K+1234567A", () => {
-
-		expect(validator.ValidateDni("-K+1234567A")).toEqual(false);
-
-	});
-
-	// 3   Españoles residentes en el extranjero sin DNI
-
-	test("test format L+1234567A", () => {
-
-		expect(validator.ValidateDni("L+1234567A")).toEqual(true);
-
-	});
-
-	test("test format -L+1234567A", () => {
-
-		expect(validator.ValidateDni("-L+1234567A")).toEqual(false);
-
-	});
-
-	//  NIF que otorga la Agencia Tributaria a extranjeros que no tienen NIE
-
-	test("test format M+1234567A", () => {
-
-		expect(validator.ValidateDni("M+1234567A")).toEqual(true);
-
-	});
-
-	test("test format -M+1234567A", () => {
-
-		expect(validator.ValidateDni("-M+1234567A")).toEqual(false);
+		expect(validator.ValidateNIF("A12345678")).toEqual(false);
 
 	});
 
 	//  Extranjeros residentes en España e identificados por la Policía con un NIE, asignado hasta el 15 de julio de 2008. Los NIE, según la Orden de 7 de febrero de 1997, inicialmente constaban de X + 8 números + dígito de control, la Orden INT/2058/2008 redujo de 8 a 7 los números para que tuvieran la misma longitud que los NIF y CIF, pero esta Orden mantiene la validez de los NIE X de 8 dígitos anteriores ya asignados.
 
-	test("test format X+1234567A", () => {
+	test("test format X1234567L", () => {
 
-		expect(validator.ValidateDni("X+1234567A")).toEqual(true);
+		expect(validator.ValidateNIF("X1234567L")).toEqual(true);
 
 	});
 
-	test("test format -X+1234567A", () => {
+	test("test format X1234567A", () => {
 
-		expect(validator.ValidateDni("-X+1234567A")).toEqual(false);
+		expect(validator.ValidateNIF("X1234567A")).toEqual(false);
 
 	});
 
 	//   Extranjeros identificados por la Policía con un NIE, asignado desde el 16 de julio de 2008 (Orden INT/2058/2008, BOE del 15 de julio )
 
-	test("test format Y+1234567A", () => {
+	test("test format Y1234567X", () => {
 
-		expect(validator.ValidateDni("Y+1234567A")).toEqual(true);
+		expect(validator.ValidateNIF("Y1234567X")).toEqual(true);
 
 	});
 
-	test("test format -Y+1234567A", () => {
+	test("test format Y1234567A", () => {
 
-		expect(validator.ValidateDni("-Y+1234567A")).toEqual(false);
+		expect(validator.ValidateNIF("Y1234567A")).toEqual(false);
 
 	});
 
 	//  Letra reservada para cuando se agoten los 'Y' para Extranjeros identificados por la Policía con un NIE
 
 
-	test("test format Z+1234567A", () => {
+	test("test format Z1234567R", () => {
 
-		expect(validator.ValidateDni("Z+1234567A")).toEqual(true);
+		expect(validator.ValidateNIF("Z1234567R")).toEqual(true);
 
 	});
 
-	test("test format -Z+1234567A", () => {
+	test("test format Z1234567A", () => {
 
-		expect(validator.ValidateDni("-Z+1234567A")).toEqual(false);
+		expect(validator.ValidateNIF("Z1234567A")).toEqual(false);
 
 	});
 
@@ -295,62 +254,60 @@ describe("Filter DNI numbers and let letter", () => {
 
 //Validation Password
 describe("Comprobar password", () => {
-
+	const strRegEx = /^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$/;
 	test("Test format abcdefghe4 [have alpha, numbers, less than 10 characters and more than 3]", () => {
 
-		expect(validator.ValidatePass("abcdefghe4")).toEqual(true);
+		expect(validator.ValidatePass("abcdefghe4", strRegEx)).toEqual(true);
 
 	});
 	test("Test format ab [have alpha, doesn't have numbers, less than 3 length", () => {
 
-		expect(validator.ValidatePass("ab")).toEqual(false);
+		expect(validator.ValidatePass("ab", strRegEx)).toEqual(false);
 
 	});
 	test("Test format Abbcc [have alpha, doesn't have numbers, starts with a capital letter] ", () => {
 
-		expect(validator.ValidatePass("Abbcc")).toEqual(false);
+		expect(validator.ValidatePass("Abbcc", strRegEx)).toEqual(false);
 
 	});
 	test("Test format abcdCfghesdsaf [more than 10 length] ", () => {
 
-		expect(validator.ValidatePass("abcdCfghesdsaf")).toEqual(false);
+		expect(validator.ValidatePass("abcdCfghesdsaf", strRegEx)).toEqual(false);
 
 	});
 	test("Test format 34566 [only number]", () => {
 
-		expect(validator.ValidatePass("34566")).toEqual(false);
+		expect(validator.ValidatePass("34566", strRegEx)).toEqual(false);
 
 	});
 	test("Test format adcdef*[contains *] ", () => {
 
-		expect(validator.ValidatePass("adcdef*")).toEqual(false);
+		expect(validator.ValidatePass("adcdef*", strRegEx)).toEqual(false);
 
 	});
 	test("Test format absc_b [contains _]", () => {
 
-		expect(validator.ValidatePass("absc_b")).toEqual(false);
+		expect(validator.ValidatePass("absc_b", strRegEx)).toEqual(false);
 
 	});
 	test("Test format absc-b [contains -] ", () => {
 
-		expect(validator.ValidatePass("absc-b")).toEqual(false);
+		expect(validator.ValidatePass("absc-b", strRegEx)).toEqual(false);
 
 	});
 	test("Test format absc.b [contains .] ", () => {
 
-		expect(validator.validatePass("absc.b")).toEqual(false);
+		expect(validator.validatePass("absc.b", strRegEx)).toEqual(false);
 
 	});
 	test("Test format absc,b [contains ,]", () => {
 
-		expect(validator.validatePass("absc,b")).toEqual(false);
+		expect(validator.validatePass("absc,b", strRegEx)).toEqual(false);
 
 	});
 	test("Test format absc b [contains space]", () => {
 
-		expect(validator.validatePass("absc b")).toEqual(false);
+		expect(validator.validatePass("absc b", strRegEx)).toEqual(false);
 
 	});
 });
-
-// aqui esta el droide //
