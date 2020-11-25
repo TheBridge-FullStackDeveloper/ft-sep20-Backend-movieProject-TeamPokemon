@@ -2,7 +2,7 @@
 
 const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { "useNewUrlParser": true });
+const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
 	const collection = client.db("test").collection("devices");
 	// perform actions on the collection object
@@ -132,6 +132,7 @@ serverObj.get("/login", async (req, res) => {
 	const {code} = req.query;
 	if (code) {
 		const user = await getGoogleUser(code);
+		// eslint-disable-next-line no-console
 		console.log(user);
 		res.redirect("/");
 		// res.send(user);
@@ -216,7 +217,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 
 });
 
-serverObj.get();
+// serverObj.get();
 
 //LOGOUT (POST)
 //
@@ -281,4 +282,4 @@ async function getGoogleUser(code) {
 }
 
 // eslint-disable-next-line no-console
-console.log(getGoogleAuthURL());
+// console.log(getGoogleAuthURL());
