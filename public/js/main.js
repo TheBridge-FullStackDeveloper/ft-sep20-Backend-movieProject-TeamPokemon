@@ -17,7 +17,7 @@ paintIndex();
 function SearchMovies(){
 
 
-	let getValueTitle = document.querySelector("#searcherInput");
+	let getValueTitle = document.querySelector("#searcherInput").value;
 
 	fetch(`http://localhost:8080/SearchMovies/title/${getValueTitle}`)
 		.then(res => res.json())
