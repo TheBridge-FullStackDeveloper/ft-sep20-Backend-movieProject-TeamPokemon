@@ -1,15 +1,5 @@
 //------------------ GLOBALS -------------------//
 
-const MongoClient = require("mongodb").MongoClient;
-const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
-client.connect(err => {
-	const collection = client.db("test").collection("devices");
-	// perform actions on the collection object
-	client.close();
-});
-
-
 //------------------ MODULES -------------------//
 const express = require("express");
 const mysql = require("mysql");
@@ -22,7 +12,7 @@ const JWT = require("./lib/jwt.js");
 const fetch = require("node-fetch");
 const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { "useNewUrlParser": true });
+const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
 	const collection = client.db("test").collection("devices");
 	// perform actions on the collection object
@@ -50,6 +40,9 @@ serverObj.use(cookieParser());
 serverObj.listen(listeningPort);
 
 const validateRegisterData = (data) => {
+	if ((data === undefined) || (data === null)) {
+		return {"ret" : false, "msg" : "Datos de registro no definidos!"};
+	}
 	//EMAIL
 	const validator = new validatorNode();
 	let validatorOutput = validator.ValidateEmail(data.email);
@@ -104,8 +97,8 @@ serverObj.post("register", (req, res) => {
 				});
 			});
 			prom.then(() => {
-				const sql = `SELECT USRID FROM users WHERE EMAIL LIKE '${req.body.email}'`;
-				conectionDB.query(sql, function (err, result) {
+				const sql = "SELECT USRID FROM users WHERE EMAIL LIKE ?";
+				conectionDB.query(sql, [req.body.email], function (err, result) {
 					if (err){
 						throw err;
 					} else if (result.length){
@@ -113,13 +106,13 @@ serverObj.post("register", (req, res) => {
 						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
 					} else {
 						//Proceed to store user in db table
-						const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.password}', '${req.body.profile}', '${req.body.dateBirth}', '${req.body.nif}', '${req.body.phone}')`;
-						conectionDB.query(sql, function (err, result) {
+						const [values] = req.body;
+						const sql = "INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?, ?)";
+						conectionDB.query(sql, values, function (err, result) {
 							if (err){
 								throw err;
 							} else {
 								res.send({"res" : "1", "msg" : "Usuario registrado!"});
-								
 							}
 						});
 					}
@@ -162,8 +155,8 @@ serverObj.post("/login", (req, res) => {
 			});
 		});
 		prom.then(() => {
-			const sql = `SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE '${req.body.user}'`;
-			conectionDB.query(sql, function (err, result) {
+			const sql = "SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE ?";
+			conectionDB.query(sql, [req.body.user], function (err, result) {
 				if (err){
 					throw err;
 				} else if (result.length){
