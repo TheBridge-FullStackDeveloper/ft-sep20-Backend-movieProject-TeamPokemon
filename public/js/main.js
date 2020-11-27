@@ -40,3 +40,11 @@ function paintSearchedMovies(d, i){
 	let titleMovie = document.createElement("h2");
 	titleMovie.id = d.Search[0];
 }
+
+function loginWithGoogle(e){
+	e.preventDefault();
+	//window.location.assign("http://localhost:8888/loginG");
+	window.location.href = "/loginG";
+}
+
+document.getElementById("bt").addEventListener("click", loginWithGoogle);
