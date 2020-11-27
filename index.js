@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1ae387cf0c56ad88323e4482d080383c624ade42
 //------------------ MODULES -------------------//
 const express = require("express");
 const mysql = require("mysql");
@@ -8,7 +12,6 @@ const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
-const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
@@ -23,6 +26,7 @@ const serverObj = express();
 //Express server setup
 //Definition of listening port
 const listeningPort = 8888;
+
 
 //------------------ MIDDLEWARES -------------------//
 //Setup the public (Frontend) folder
