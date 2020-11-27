@@ -25,9 +25,18 @@
     "jest": "^26.6.3"
   },
   "dependencies": {
+    "base-64": "^1.0.0",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+<<<<<<< HEAD
     "firebase": "^8.1.1",
     "googleapis": "^65.0.0"
+=======
+    "googleapis": "^65.0.0",
+    "mongodb": "^3.6.3",
+    "mysql": "^2.18.1",
+    "node-fetch": "^2.6.1"
+>>>>>>> f4e9de3c8a4b82d0f050daa5e451f749a8413f69
   }
 }
