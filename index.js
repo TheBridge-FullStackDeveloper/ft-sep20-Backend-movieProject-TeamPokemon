@@ -12,6 +12,7 @@ const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
+
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
@@ -334,3 +335,23 @@ async function getGoogleUser(code) {
 	}
 	return null;
 }
+
+/*
+
+//Generator JWT en Oauth2
+
+const Payload = {
+	"user" : req.body.user,
+	"profile" : result[0].USER_PROFILE,
+	"iat" : new Date()
+};
+const jwt = JWT(Payload);
+//Grant access based on profile
+switch (result[0].USER_PROFILE) {
+case "admin":
+{
+	//Access as administrator
+	res.cookie("JWT", jwt, {"httpOnly" : true})
+		.send({"res" : "1", "msg" : "admin"});
+	break;
+}}*/
