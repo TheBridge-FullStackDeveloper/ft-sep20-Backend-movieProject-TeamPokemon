@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 1ae387cf0c56ad88323e4482d080383c624ade42
 //------------------ MODULES -------------------//
 const express = require("express");
 const mysql = require("mysql");
@@ -12,6 +8,7 @@ const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
+const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
@@ -127,6 +124,51 @@ serverObj.post("register", (req, res) => {
 	}
 });
 
+//REGISTER USER (POST)
+serverObj.post("AUTH", (req, res) => {
+	const conectionDB = mysql.createConnection({
+		"host": "localhost",
+		"user": "root",
+		"password": "root",
+		"database": "movieprojectdb"});
+
+
+	if (conectionDB){
+		const prom = new Promise((resolve, reject) => {
+			conectionDB.connect(function(err) {
+				if (err) {
+					reject(err);
+				}
+				resolve();
+			});
+		});
+		prom.then(() => {
+			const sql = `SELECT USRID FROM Oauth2 WHERE EMAIL LIKE '${req.body.email}'`;
+			conectionDB.query(sql, function (err, result) {
+				if (err){
+					throw err;
+				} else if (result.length){
+					//User found already in db
+					res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
+				} else {
+					//Proceed to store user in db table
+					const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.name}', '${req.body.token}', '${req.body.id_auth}')`;
+					conectionDB.query(sql, function (err, result) {
+						if (err){
+							throw err;
+						} else {
+							res.send({"res" : "1", "msg" : "Usuario registrado!"});
+
+						}
+					});
+				}
+			});
+		})
+			.catch((fail) => {
+				res.send({"res" : "0", "msg" : "Error connection to database"});
+			});
+	}
+});
 //CREDENTIALS CHECKOUT (POST)
 serverObj.post("/login", (req, res) => {
 	//Validate credentials
@@ -287,7 +329,7 @@ let GOOGLE_CLIENT_ID = "892702418247-bgj3ovrtauoh0i2ru4qs0j9tbg1rn1ma.apps.googl
 const oauth2Client = new google.auth.OAuth2(
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
-	/*
+	/*id_token
    * This is where Google will redirect the user after they
    * give permission to your application
    */
@@ -331,6 +373,24 @@ async function getGoogleUser(code) {
 				// throw new Error(error.message);
 			}
 		}
+		const Payload = {
+			"user" : req.body.user,
+			"profile" : "user",
+			"iat" : new Date()
+		};
+		const jwt = JWT(Payload);
+		//Grant access based on profile
+		switch (result[0].USER_PROFILE) {
+		case "admin":
+		{
+			//Access as administrator
+			res.cookie("JWT", jwt, {"httpOnly" : true})
+				.send({"res" : "1", "msg" : "admin"});
+			break;
+		}
+		}
 	}
 	return null;
+	//JWT
+
 }
