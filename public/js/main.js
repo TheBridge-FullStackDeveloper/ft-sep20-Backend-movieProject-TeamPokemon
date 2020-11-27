@@ -15,8 +15,6 @@ function paintIndex(){
 paintIndex();
 
 function SearchMovies(){
-
-
 	let getValueTitle = document.querySelector("#searcherInput").value;
 
 	fetch(`http://localhost:8080/SearchMovies/title/${getValueTitle}`)
@@ -38,5 +36,5 @@ function paintSearchedMovies(d, i){
 	movieContainer.id = `MovieContainer ${d[i]}`;
 
 	let titleMovie = document.createElement("h2");
-	titleMovie.id = d.Search[0];
+	// titleMovie.id = d.Search[0];
 }

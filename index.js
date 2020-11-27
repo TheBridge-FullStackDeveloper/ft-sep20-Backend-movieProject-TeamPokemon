@@ -20,14 +20,8 @@ const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
-const MongoClient = require("mongodb").MongoClient;
-const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { "useNewUrlParser": true });
-client.connect(err => {
-	const collection = client.db("test").collection("devices");
-	// perform actions on the collection object
-	client.close();
-});
+
+
 //const url = "mongodb://localhost:27017/";
 //Creation of Express server
 const serverObj = express();
@@ -119,7 +113,7 @@ serverObj.post("register", (req, res) => {
 								throw err;
 							} else {
 								res.send({"res" : "1", "msg" : "Usuario registrado!"});
-								
+
 							}
 						});
 					}
@@ -236,12 +230,13 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 					res.send({"msg" : "Movies Omdb Found", "MovieOmdb": data.Search});
 				} else {
 					try {
-						MongoClient.connect(url, (err, db) => {
+						MongoClient.connect(uri, (err, db) => {
 							if (err) {
 								throw err;
 							}
 							let ObjectDB = db.db("MyOwnMovies");
-							ObjectDB.collection("Movies").find({"title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
+							// console.log(ObjectDB.collection("Movies"));
+							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
 								if (err) {
 									throw err;
 								}
@@ -256,7 +251,9 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 									"Language" : result.Language,
 									"Released" : result.Released,
 								};
-								if (result){
+								// console.log(result);
+								//QUESTION esta comparacion no me la hace no se que trae del mongoDB
+								if (result.Title === FronTitle){
 									res.send({"msg" : "Movie Found in Mongo", "resMongoDB" : myMongoData});
 								} else {
 									res.send({"msg": "This movie does not exist in Mongo"});
