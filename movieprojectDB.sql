@@ -33,8 +33,6 @@ CREATE TABLE IF NOT EXISTS oauth2 (
     PRIMARY KEY(USRID)
 );
 
-
-
 DELETE FROM users;
 DELETE FROM bookmarks;
 
