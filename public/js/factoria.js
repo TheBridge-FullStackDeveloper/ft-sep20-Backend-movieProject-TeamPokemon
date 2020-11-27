@@ -14,13 +14,24 @@ y texto y devuelve una referencia al mismo.
 */
 export function Factoria(tipoElemento, atributos, texto)
 {
+    let nodoElemento = null;
+    //VALIDACIÓN DE TIPO DE DATOS DE ENTRADA
+    if ((tipoElemento === "") || (typeof tipoElemento !== String))
+        return nodoElemento;
+
+    if (typeof texto !== String)
+        return nodoElemento;
+
     //CREACIÓN DEL NODO DEL ELEMENTO
-    let nodoElemento = document.createElement(tipoElemento);
+    nodoElemento = document.createElement(tipoElemento);
     //CREACIÓN DE LOS ATRIBUTOS
-    atributos.forEach(function(dataAtributo){
-                            let nodoAtributo = document.createAttribute(dataAtributo[0]);
-                            nodoAtributo.value = dataAtributo[1];
-                            nodoElemento.setAttributeNode(nodoAtributo);
+    atributos.forEach((dataAtributo) => {
+                            if ((typeof dataAtributo[0] === String) || (typeof dataAtributo[1] === String))
+                            {
+                                let nodoAtributo = document.createAttribute(dataAtributo[0]);
+                                nodoAtributo.value = dataAtributo[1];
+                                nodoElemento.setAttributeNode(nodoAtributo);
+                            }
                         });
     //CREACIÓN DEL TEXTO DEL ELEMENTO
     let nodoTextoElemento = document.createTextNode(texto);
