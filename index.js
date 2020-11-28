@@ -1,14 +1,3 @@
-//------------------ GLOBALS -------------------//
-
-const MongoClient = require("mongodb").MongoClient;
-const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
-client.connect(err => {
-	const collection = client.db("test").collection("devices");
-	// perform actions on the collection object
-	client.close();
-});
-
 
 //------------------ MODULES -------------------//
 const express = require("express");
@@ -21,7 +10,14 @@ const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
 
-
+const MongoClient = require("mongodb").MongoClient;
+const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
+client.connect(err => {
+	const collection = client.db("test").collection("devices");
+	// perform actions on the collection object
+	client.close();
+});
 //const url = "mongodb://localhost:27017/";
 //Creation of Express server
 const serverObj = express();
@@ -29,6 +25,7 @@ const serverObj = express();
 //Express server setup
 //Definition of listening port
 const listeningPort = 8888;
+
 
 //------------------ MIDDLEWARES -------------------//
 //Setup the public (Frontend) folder
@@ -44,6 +41,9 @@ serverObj.use(cookieParser());
 serverObj.listen(listeningPort);
 
 const validateRegisterData = (data) => {
+	if (data === undefined || data === null) {
+		return {"ret" : false, "msg" : "Datos de registro no definidos!"};
+	}
 	//EMAIL
 	const validator = new validatorNode();
 	let validatorOutput = validator.ValidateEmail(data.email);
@@ -98,8 +98,8 @@ serverObj.post("register", (req, res) => {
 				});
 			});
 			prom.then(() => {
-				const sql = `SELECT USRID FROM users WHERE EMAIL LIKE '${req.body.email}'`;
-				conectionDB.query(sql, function (err, result) {
+				const sql = "SELECT USRID FROM users WHERE EMAIL LIKE ?";
+				conectionDB.query(sql, [req.body.email], function (err, result) {
 					if (err){
 						throw err;
 					} else if (result.length){
@@ -107,8 +107,9 @@ serverObj.post("register", (req, res) => {
 						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
 					} else {
 						//Proceed to store user in db table
-						const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.password}', '${req.body.profile}', '${req.body.dateBirth}', '${req.body.nif}', '${req.body.phone}')`;
-						conectionDB.query(sql, function (err, result) {
+						const [values] = req.body;
+						const sql = "INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?, ?)";
+						conectionDB.query(sql, values, function (err, result) {
 							if (err){
 								throw err;
 							} else {
@@ -156,8 +157,8 @@ serverObj.post("/login", (req, res) => {
 			});
 		});
 		prom.then(() => {
-			const sql = `SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE '${req.body.user}'`;
-			conectionDB.query(sql, function (err, result) {
+			const sql = "SELECT USRID, PASS, USER_PROFILE FROM users WHERE EMAIL LIKE ?";
+			conectionDB.query(sql, [req.body.user], function (err, result) {
 				if (err){
 					throw err;
 				} else if (result.length){
@@ -215,9 +216,6 @@ serverObj.get("/login", async (req, res) => {
 serverObj.get("/SearchMovies/:Title", (req, res) =>{
 
 	let FronTitle = req.params.Title;
-	// let Director = req.params.Director;
-	// let Year = req.params.Year;
-	// let Genre = req.params.Genre;
 	if (FronTitle !== null) {
 
 		//s= devuelve listado de peliculas que contienen esapalabra que buscaste
@@ -225,45 +223,54 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 			.then(res => res.json())
 			.then(data => {
 
-				//QUESTION s= me da un listado de toda las peliculas que contengan  mi palabra, entonces como hago esta comparacion, esto esta bien asi?
-				if (data.Search) {
-					res.send({"msg" : "Movies Omdb Found", "MovieOmdb": data.Search});
+				let Movies = Object.values(data);
+				if (Movies[0] !== "False"){
+
+					Movies[0].map(film => {
+						return {
+							// eslint-disable-next-line no-underscore-dangle
+							"Id": `O_${film._id}`,
+							"Title" : film.Title,
+							"Released" : film.Released,
+							"Poster": film.Poster
+						};
+
+					});
+					res.send({"Movies": Movies[0]});
 				} else {
+
 					try {
 						MongoClient.connect(uri, (err, db) => {
 							if (err) {
 								throw err;
 							}
 							let ObjectDB = db.db("MyOwnMovies");
-							// console.log(ObjectDB.collection("Movies"));
-							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
-								if (err) {
-									throw err;
-								}
-								let myMongoData = {
 
-									"Title" : result.Title,
-									"Director" : result.Director,
-									"Actors" : result.Actors,
-									"Genre" : result.Genre,
-									"Plot" : result.Plot,
-									"Runtime" : result.Runtime,
-									"Language" : result.Language,
-									"Released" : result.Released,
-								};
-								// console.log(result);
-								//QUESTION esta comparacion no me la hace no se que trae del mongoDB
-								if (result.Title === FronTitle){
-									res.send({"msg" : "Movie Found in Mongo", "resMongoDB" : myMongoData});
-								} else {
-									res.send({"msg": "This movie does not exist in Mongo"});
-								}
+							//$options : "i" key insensitive le da igual mayuscula o minuscula
+							//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
+							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
+								.toArray((err, result) => {
 
-								db.close();
-							});
+									if (result.length && !err){
+										let myMongoData = result.map(film =>{
+											return {
+												// eslint-disable-next-line no-underscore-dangle
+												"_Id": `M_${film._id}`,
+												"Title" : film.Title,
+												"Released" : film.Released,
+												"Poster": film.Poster
+											};
+										});
+										res.send({"Movies" : myMongoData});
+									} else {
+										res.send({"msg": "NotExist"});
+									}
+
+									db.close();
+								});
 						});
 					} catch (e) {
-						return {"msg" : "MongoDB error connection"};
+						return {"msg" : "ErrorConnection with MongoDB"};
 					}
 				}
 			})
@@ -273,6 +280,62 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 	}
 });
 
+serverObj.get("/FoundMovie/:Movie", (req, res) => {
+
+	let movieSelected = req.params.Movie;
+
+	if (movieSelected !== null){
+		if (movieSelected[0] === "O"){
+
+			const cropPosition = 2;
+			const id = movieSelected.substr(cropPosition);
+
+			fetch(`http://www.omdbapi.com/?i=${id}&apikey=4c909483`)
+				.then(res => res.json())
+				.then(data =>{
+
+					if (data) {
+						res.send(data);
+					} else {
+						res.send({"msg" : "NoData"});
+					}
+				})
+				.catch(() => res.send({"msg" : "Error"}));
+
+		} else if (movieSelected[0] === "M"){
+
+			try {
+				MongoClient.connect(uri, (err, db) => {
+
+					if (err) {
+						throw err;
+					}
+
+					let ObjectDB = db.db("MyOwnMovies");
+					ObjectDB.collection("Movies").find({"_Id": {"$regex": `M_${movieSelected}`}})
+						.toArray((err, result) => {
+
+							if (result.length && !err){
+								res.send(result);
+							} else {
+								res.send({"msg": "NotExist"});
+							}
+
+							db.close();
+						});
+				});
+
+			} catch (e) {
+				res.send({"msg" : "ErrorConnection with MongoDB"});
+			}
+		} else {
+			res.send({"msg" : "IncorrectId"});
+		}
+	} else {
+		res.send({"msg" : "NoId"});
+	}
+
+});
 // serverObj.get();
 
 //LOGOUT (POST)
@@ -303,6 +366,7 @@ function getGoogleAuthURL() {
 		"https://www.googleapis.com/auth/userinfo.profile",
 		"https://www.googleapis.com/auth/userinfo.email",
 	];
+
 	return oauth2Client.generateAuthUrl({
 		"access_type": "offline",
 		"prompt": "consent",
