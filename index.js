@@ -1,5 +1,3 @@
-//------------------ GLOBALS -------------------//
-
 //------------------ MODULES -------------------//
 const express = require("express");
 const mysql = require("mysql");
@@ -10,6 +8,7 @@ const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
+
 const MongoClient = require("mongodb").MongoClient;
 var ObjectId = require('mongodb').ObjectId; 
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
@@ -19,13 +18,14 @@ client.connect(err => {
 	// perform actions on the collection object
 	client.close();
 });
-//const url = "mongodb://localhost:27017/";
+
 //Creation of Express server
 const serverObj = express();
 
 //Express server setup
 //Definition of listening port
 const listeningPort = 8888;
+
 
 //------------------ MIDDLEWARES -------------------//
 //Setup the public (Frontend) folder
@@ -172,6 +172,7 @@ serverObj.post("register", (req, res) => {
 								throw err;
 							} else {
 								res.send({"res" : "1", "msg" : "Usuario registrado!"});
+
 							}
 						});
 					}
@@ -185,6 +186,51 @@ serverObj.post("register", (req, res) => {
 	}
 });
 
+//REGISTER USER (POST)
+serverObj.post("AUTH", (req, res) => {
+	const conectionDB = mysql.createConnection({
+		"host": "localhost",
+		"user": "root",
+		"password": "root",
+		"database": "movieprojectdb"});
+
+
+	if (conectionDB){
+		const prom = new Promise((resolve, reject) => {
+			conectionDB.connect(function(err) {
+				if (err) {
+					reject(err);
+				}
+				resolve();
+			});
+		});
+		prom.then(() => {
+			const sql = `SELECT USRID FROM Oauth2 WHERE EMAIL LIKE '${req.body.email}'`;
+			conectionDB.query(sql, function (err, result) {
+				if (err){
+					throw err;
+				} else if (result.length){
+					//User found already in db
+					res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
+				} else {
+					//Proceed to store user in db table
+					const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.name}', '${req.body.token}', '${req.body.id_auth}')`;
+					conectionDB.query(sql, function (err, result) {
+						if (err){
+							throw err;
+						} else {
+							res.send({"res" : "1", "msg" : "Usuario registrado!"});
+
+						}
+					});
+				}
+			});
+		})
+			.catch((fail) => {
+				res.send({"res" : "0", "msg" : "Error connection to database"});
+			});
+	}
+});
 //CREDENTIALS CHECKOUT (POST)
 serverObj.post("/login", (req, res) => {
 	//Validate credentials
@@ -423,48 +469,62 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 		// let Genre = req.params.Genre;
 		if (FronTitle !== null) {
 
-			//s= devuelve listado de peliculas que contienen esapalabra que buscaste
-			fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=4c909483`)
-				.then(res => res.json())
-				.then(data => {
+	let FronTitle = req.params.Title;
+	if (FronTitle !== null) {
 
-					//QUESTION s= me da un listado de toda las peliculas que contengan  mi palabra, entonces como hago esta comparacion, esto esta bien asi?
-					if (data.Search) {
-						res.send({"msg" : "Movies Omdb Found", "MovieOmdb": data.Search});
-					} else {
-						try {
-							MongoClient.connect(url, (err, db) => {
-								if (err) {
-									throw err;
-								}
-								let ObjectDB = db.db("MyOwnMovies");
-								ObjectDB.collection("Movies").find({"title": {"$regex": `.*${FronTitle}.*`}}, (err, result) => {
-									if (err) {
-										throw err;
-									}
-									let myMongoData = {
+		//s= devuelve listado de peliculas que contienen esapalabra que buscaste
+		fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=4c909483`)
+			.then(res => res.json())
+			.then(data => {
 
-										"Title" : result.Title,
-										"Director" : result.Director,
-										"Actors" : result.Actors,
-										"Genre" : result.Genre,
-										"Plot" : result.Plot,
-										"Runtime" : result.Runtime,
-										"Language" : result.Language,
-										"Released" : result.Released,
-									};
-									if (result){
-										res.send({"msg" : "Movie Found in Mongo", "resMongoDB" : myMongoData});
+				let Movies = Object.values(data);
+				if (Movies[0] !== "False"){
+
+					Movies[0].map(film => {
+						return {
+							// eslint-disable-next-line no-underscore-dangle
+							"Id": `O_${film._id}`,
+							"Title" : film.Title,
+							"Released" : film.Released,
+							"Poster": film.Poster
+						};
+
+					});
+					res.send({"Movies": Movies[0]});
+				} else {
+
+					try {
+						MongoClient.connect(uri, (err, db) => {
+							if (err) {
+								throw err;
+							}
+							let ObjectDB = db.db("MyOwnMovies");
+
+							//$options : "i" key insensitive le da igual mayuscula o minuscula
+							//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
+							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
+								.toArray((err, result) => {
+
+									if (result.length && !err){
+										let myMongoData = result.map(film =>{
+											return {
+												// eslint-disable-next-line no-underscore-dangle
+												"_Id": `M_${film._id}`,
+												"Title" : film.Title,
+												"Released" : film.Released,
+												"Poster": film.Poster
+											};
+										});
+										res.send({"Movies" : myMongoData});
 									} else {
-										res.send({"msg": "This movie does not exist in Mongo"});
+										res.send({"msg": "NotExist"});
 									}
 
 									db.close();
 								});
-							});
-						} catch (e) {
-							return {"msg" : "MongoDB error connection"};
-						}
+						});
+					} catch (e) {
+						return {"msg" : "ErrorConnection with MongoDB"};
 					}
 				})
 				.catch({"msg" : "ErrorConnection with Omdb"});
@@ -474,6 +534,62 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 	}
 });
 
+serverObj.get("/FoundMovie/:Movie", (req, res) => {
+
+	let movieSelected = req.params.Movie;
+
+	if (movieSelected !== null){
+		if (movieSelected[0] === "O"){
+
+			const cropPosition = 2;
+			const id = movieSelected.substr(cropPosition);
+
+			fetch(`http://www.omdbapi.com/?i=${id}&apikey=4c909483`)
+				.then(res => res.json())
+				.then(data =>{
+
+					if (data) {
+						res.send(data);
+					} else {
+						res.send({"msg" : "NoData"});
+					}
+				})
+				.catch(() => res.send({"msg" : "Error"}));
+
+		} else if (movieSelected[0] === "M"){
+
+			try {
+				MongoClient.connect(uri, (err, db) => {
+
+					if (err) {
+						throw err;
+					}
+
+					let ObjectDB = db.db("MyOwnMovies");
+					ObjectDB.collection("Movies").find({"_Id": {"$regex": `M_${movieSelected}`}})
+						.toArray((err, result) => {
+
+							if (result.length && !err){
+								res.send(result);
+							} else {
+								res.send({"msg": "NotExist"});
+							}
+
+							db.close();
+						});
+				});
+
+			} catch (e) {
+				res.send({"msg" : "ErrorConnection with MongoDB"});
+			}
+		} else {
+			res.send({"msg" : "IncorrectId"});
+		}
+	} else {
+		res.send({"msg" : "NoId"});
+	}
+
+});
 // serverObj.get();
 
 //LOGOUT (POST)
@@ -490,7 +606,7 @@ let GOOGLE_CLIENT_ID = "892702418247-bgj3ovrtauoh0i2ru4qs0j9tbg1rn1ma.apps.googl
 const oauth2Client = new google.auth.OAuth2(
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
-	/*
+	/*id_token
    * This is where Google will redirect the user after they
    * give permission to your application
    */
@@ -504,6 +620,7 @@ function getGoogleAuthURL() {
 		"https://www.googleapis.com/auth/userinfo.profile",
 		"https://www.googleapis.com/auth/userinfo.email",
 	];
+
 	return oauth2Client.generateAuthUrl({
 		"access_type": "offline",
 		"prompt": "consent",
@@ -533,6 +650,24 @@ async function getGoogleUser(code) {
 				// throw new Error(error.message);
 			}
 		}
+		const Payload = {
+			"user" : req.body.user,
+			"profile" : "user",
+			"iat" : new Date()
+		};
+		const jwt = JWT(Payload);
+		//Grant access based on profile
+		switch (result[0].USER_PROFILE) {
+		case "admin":
+		{
+			//Access as administrator
+			res.cookie("JWT", jwt, {"httpOnly" : true})
+				.send({"res" : "1", "msg" : "admin"});
+			break;
+		}
+		}
 	}
 	return null;
+	//JWT
+
 }
