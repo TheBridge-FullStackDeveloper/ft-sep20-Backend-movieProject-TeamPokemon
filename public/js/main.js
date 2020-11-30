@@ -15,8 +15,6 @@ function paintIndex(){
 paintIndex();
 
 function SearchMovies(){
-
-
 	let getValueTitle = document.querySelector("#searcherInput").value;
 
 	fetch(`http://localhost:8080/SearchMovies/title/${getValueTitle}`)
@@ -38,6 +36,7 @@ function paintSearchedMovies(d, i){
 	movieContainer.id = `MovieContainer ${d[i]}`;
 
 	let titleMovie = document.createElement("h2");
+<<<<<<< HEAD
 	titleMovie.id = d.Search[0];
 }
 
@@ -48,3 +47,7 @@ function loginWithGoogle(e){
 }
 
 document.getElementById("bt").addEventListener("click", loginWithGoogle);
+=======
+	// titleMovie.id = d.Search[0];
+}
+>>>>>>> 7724c606297bb9b1e808f89e7fc6eef296c2b26f

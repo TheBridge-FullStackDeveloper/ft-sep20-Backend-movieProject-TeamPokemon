@@ -16,17 +16,19 @@ export function Factoria(tipoElemento, atributos, texto)
 {
     let nodoElemento = null;
     //VALIDACIÓN DE TIPO DE DATOS DE ENTRADA
-    if ((tipoElemento === "") || (typeof tipoElemento !== String))
+    if ((tipoElemento === "") || (typeof tipoElemento !== "string")) {
         return nodoElemento;
-
-    if (typeof texto !== String)
-        return nodoElemento;
+    } else {
+        if (typeof texto !== "string") {
+            return nodoElemento;
+        }
+    }    
 
     //CREACIÓN DEL NODO DEL ELEMENTO
     nodoElemento = document.createElement(tipoElemento);
     //CREACIÓN DE LOS ATRIBUTOS
     atributos.forEach((dataAtributo) => {
-                            if ((typeof dataAtributo[0] === String) || (typeof dataAtributo[1] === String))
+                            if ((typeof dataAtributo[0] === "string") || (typeof dataAtributo[1] === "string"))
                             {
                                 let nodoAtributo = document.createAttribute(dataAtributo[0]);
                                 nodoAtributo.value = dataAtributo[1];
