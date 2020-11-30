@@ -459,6 +459,68 @@ serverObj.get("/login", async (req, res) => {
 });
 
 serverObj.get("/SearchMovies/:Title", (req, res) =>{
+    //Secure end point
+    if (!JWT.checkJWT(req.cookies("JWT"))) {
+        res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
+    } else {
+        let FronTitle = req.params.Title;
+        if (FronTitle !== null) {
+            //s= devuelve listado de peliculas que contienen esapalabra que buscaste
+            fetch(http://www.omdbapi.com/?s=${FronTitle}&apikey=${process.env.OmdbApiKey})
+                .then(res => res.json())
+                .then(data => {
+                    let Movies = Object.values(data);
+                    if (Movies[0] !== "False"){
+                        Movies[0].map(film => {
+                            return {
+                                // eslint-disable-next-line no-underscore-dangle
+                                "Id": O_${film._id},
+                                "Title" : film.Title,
+                                "Released" : film.Released,
+                                "Poster": film.Poster
+                            };
+                        });
+                        res.send({"Movies": Movies[0]});
+                    } else {
+                        try {
+                            MongoClient.connect(uri, (err, db) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                let ObjectDB = db.db("MyOwnMovies");
+                                //$options : "i" key insensitive le da igual mayuscula o minuscula
+                                //$regex : .${FronTitle}. puede contener algo o no por delante y por detras
+                                ObjectDB.collection("Movies").find({"Title": {"$regex": .*${FronTitle}.*, "$options": "i"}})
+                                    .toArray((err, result) => {
+                                        if (result.length && !err){
+                                            let myMongoData = result.map(film =>{
+                                                return {
+                                                    // eslint-disable-next-line no-underscore-dangle
+                                                    "_Id": M_${film._id},
+                                                    "Title" : film.Title,
+                                                    "Released" : film.Released,
+                                                    "Poster": film.Poster
+                                                };
+                                            });
+                                            res.send({"Movies" : myMongoData});
+                                        } else {
+                                            res.send({"msg": "NotExist"});
+                                        }
+                                        db.close();
+                                    });
+                            });
+                        } catch (e) {
+                            return {"msg" : "ErrorConnection with MongoDB"};
+                        }
+                    }
+                })
+                .catch({"msg" : "ErrorConnection with Omdb"});
+        } else {
+            res.send({"msg" : "Empty Title"});
+        }
+    }
+});
+
 	//Secure end point
 	if (!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
