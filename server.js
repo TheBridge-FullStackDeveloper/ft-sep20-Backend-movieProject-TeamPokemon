@@ -529,7 +529,6 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 			res.send({"msg" : "Empty Title"});
 		}
 	}
-	
 });
 
 serverObj.get("/FoundMovie/:Movie", (req, res) => {
