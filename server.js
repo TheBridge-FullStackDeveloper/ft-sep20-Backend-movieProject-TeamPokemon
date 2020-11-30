@@ -10,6 +10,7 @@ const JWT = require("./lib/jwt.js");
 const fetch = require("node-fetch");
 
 const MongoClient = require("mongodb").MongoClient;
+var ObjectId = require('mongodb').ObjectId; 
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
@@ -72,65 +73,63 @@ const validateRegisterData = (data) => {
 	return true;
 };
 
-
 const validateMovieData = (data) => {
 	if (data === undefined || data === null) {
-		return {"ret" : false, "msg" : "Datos de la película no definidos!"};}
-
-//ID
-const validator = new validatorNode();
-let validatorOutput = validator.ValidateString(data.id, "id", /^M_[a-zA-Z0-9]+$/, true);
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//PHOTO
-validatorOutput = validator.ValidateString(data.photo, "carátula", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//TITLE
-validatorOutput = validator.ValidateString(data.title, "title", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//DIRECTOR
-validatorOutput = validator.ValidateString(data.director, "director", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//ACTORS
-validatorOutput = validator.ValidateString(data.actors, "actors", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//GENRE
-validatorOutput = validator.ValidateString(data.genre, "genre", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//YEAR
-validatorOutput = validator.ValidateString(data.year, "year", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//DURATION
-validatorOutput = validator.ValidateString(data.duration, "duration", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//LANGUAGE
-validatorOutput = validator.ValidateString(data.language, "language", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//PLOT
-validatorOutput = validator.ValidateString(data.plot, "plot", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-return true;
+		return {"ret" : false, "msg" : "Datos de la película no definidos!"};
+	}
+	//ID
+	const validator = new validatorNode();
+	let validatorOutput = validator.ValidateString(data.id, "id", /^M_[a-zA-Z0-9]+$/, true);
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//PHOTO
+	validatorOutput = validator.ValidateString(data.photo, "carátula", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//TITLE
+	validatorOutput = validator.ValidateString(data.title, "title", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//DIRECTOR
+	validatorOutput = validator.ValidateString(data.director, "director", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//ACTORS
+	validatorOutput = validator.ValidateString(data.actors, "actors", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//GENRE
+	validatorOutput = validator.ValidateString(data.genre, "genre", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//YEAR
+	validatorOutput = validator.ValidateString(data.year, "year", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//DURATION
+	validatorOutput = validator.ValidateString(data.duration, "duration", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//LANGUAGE
+	validatorOutput = validator.ValidateString(data.language, "language", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//PLOT
+	validatorOutput = validator.ValidateString(data.plot, "plot", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	return true;
 };
-
 
 //------------------ ROUTING -------------------//
 //REGISTER USER (POST)
@@ -180,14 +179,14 @@ serverObj.post("register", (req, res) => {
 				});
 				conectionDB.close();
 			})
-			.catch((fail) => {
-				res.send({"res" : "0", "msg" : "Error connection to database"});
-			});
+				.catch((fail) => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
 		}
 	}
 });
 
-//REGISTER USER (POST OAUTH)
+//REGISTER USER (POST)
 serverObj.post("AUTH", (req, res) => {
 	const conectionDB = mysql.createConnection({
 		"host": "localhost",
@@ -307,7 +306,7 @@ serverObj.post("/login", (req, res) => {
 	}
 });
 
-//Create movie in MongoDB (POST)
+//CREATION OF MOVIE IN MONGO (POST)
 serverObj.post("/createMovie", (req, res) => {
 	//Secure end point
 	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
@@ -355,8 +354,8 @@ serverObj.post("/createMovie", (req, res) => {
 	}
 });
 
-//EDITION OF MOVIE IN MONGO (PUT)
-serverObj.put("/editMovie", (req, res) => {
+//EDITION OF MOVIE IN MONGO (POST)
+serverObj.post("/editMovie", (req, res) => {
 	//Secure end point
 	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
@@ -406,8 +405,8 @@ serverObj.put("/editMovie", (req, res) => {
 	}
 });
 
-//DELETION OF MOVIE IN MONGO (DELETE)
-serverObj.delete("/deleteMovie", (req, res) => {
+//DELETION OF MOVIE IN MONGO (POST)
+serverObj.post("/deleteMovie", (req, res) => {
 	//Secure end point
 	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
@@ -464,64 +463,68 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 	if (!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
 	} else {
-
 		let FronTitle = req.params.Title;
+		// let Director = req.params.Director;
+		// let Year = req.params.Year;
+		// let Genre = req.params.Genre;
 		if (FronTitle !== null) {
 
-			//s= devuelve listado de peliculas que contienen esapalabra que buscaste
-			fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=${process.env.OmdbApiKey}`)
-				.then(res => res.json())
-				.then(data => {
+	let FronTitle = req.params.Title;
+	if (FronTitle !== null) {
 
-					let Movies = Object.values(data);
-					if (Movies[0] !== "False"){
+		//s= devuelve listado de peliculas que contienen esapalabra que buscaste
+		fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=4c909483`)
+			.then(res => res.json())
+			.then(data => {
 
-						Movies[0].map(film => {
-							return {
-								// eslint-disable-next-line no-underscore-dangle
-								"Id": `O_${film._id}`,
-								"Title" : film.Title,
-								"Released" : film.Released,
-								"Poster": film.Poster
-							};
+				let Movies = Object.values(data);
+				if (Movies[0] !== "False"){
 
+					Movies[0].map(film => {
+						return {
+							// eslint-disable-next-line no-underscore-dangle
+							"Id": `O_${film._id}`,
+							"Title" : film.Title,
+							"Released" : film.Released,
+							"Poster": film.Poster
+						};
+
+					});
+					res.send({"Movies": Movies[0]});
+				} else {
+
+					try {
+						MongoClient.connect(uri, (err, db) => {
+							if (err) {
+								throw err;
+							}
+							let ObjectDB = db.db("MyOwnMovies");
+
+							//$options : "i" key insensitive le da igual mayuscula o minuscula
+							//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
+							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
+								.toArray((err, result) => {
+
+									if (result.length && !err){
+										let myMongoData = result.map(film =>{
+											return {
+												// eslint-disable-next-line no-underscore-dangle
+												"_Id": `M_${film._id}`,
+												"Title" : film.Title,
+												"Released" : film.Released,
+												"Poster": film.Poster
+											};
+										});
+										res.send({"Movies" : myMongoData});
+									} else {
+										res.send({"msg": "NotExist"});
+									}
+
+									db.close();
+								});
 						});
-						res.send({"Movies": Movies[0]});
-					} else {
-
-						try {
-							MongoClient.connect(uri, (err, db) => {
-								if (err) {
-									throw err;
-								}
-								let ObjectDB = db.db("MyOwnMovies");
-
-								//$options : "i" key insensitive le da igual mayuscula o minuscula
-								//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
-								ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
-									.toArray((err, result) => {
-
-										if (result.length && !err){
-											let myMongoData = result.map(film =>{
-												return {
-													// eslint-disable-next-line no-underscore-dangle
-													"_Id": `M_${film._id}`,
-													"Title" : film.Title,
-													"Released" : film.Released,
-													"Poster": film.Poster
-												};
-											});
-											res.send({"Movies" : myMongoData});
-										} else {
-											res.send({"msg": "NotExist"});
-										}
-
-										db.close();
-									});
-							});
-						} catch (e) {
-							return {"msg" : "ErrorConnection with MongoDB"};
-						}
+					} catch (e) {
+						return {"msg" : "ErrorConnection with MongoDB"};
 					}
 				})
 				.catch({"msg" : "ErrorConnection with Omdb"});
@@ -529,7 +532,6 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 			res.send({"msg" : "Empty Title"});
 		}
 	}
-	
 });
 
 serverObj.get("/FoundMovie/:Movie", (req, res) => {
@@ -542,7 +544,7 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 			const cropPosition = 2;
 			const id = movieSelected.substr(cropPosition);
 
-			fetch(`http://www.omdbapi.com/?i=${id}&apikey=${process.env.OmdbApiKey}`)
+			fetch(`http://www.omdbapi.com/?i=${id}&apikey=4c909483`)
 				.then(res => res.json())
 				.then(data =>{
 
@@ -588,6 +590,7 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 	}
 
 });
+// serverObj.get();
 
 //LOGOUT (POST)
 //
@@ -595,122 +598,11 @@ serverObj.post("/logout", (req, res) => {
 	//TODO
 });
 
-serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req,res) => {
-
-	if (!JWT.checkJWT(req.cookies("JWT"))) {
-		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-	} else {
-
-		let movieId = req.params.IdMovie;
-		let ExtUserId = req.params.UserId;
-
-		if(movieId !== null && ExtUserId !== null){
-	
-			const conectionDB = mysql.createConnection({
-				"host": "localhost",
-				"user": "root",
-				"password": "root",
-				"database": "movieprojectdb"
-			});
-	
-			if (conectionDB){
-				const prom = new Promise((resolve, reject) => {
-					conectionDB.connect(function(err) {
-						if (err) {
-							reject(err);
-						}
-						resolve();
-					});
-				});
-				prom.then(() => {
-					const [values] = req.params;
-					//QUESTION Debo poner las interrogaciones aqui? que es exactamente el sql inyection
-					const sql = `INSERT INTO bookmarks(EXT_USRID, REFID) VALUES (${ExtUserId},${movieId})`;
-
-					conectionDB.query(sql, values, (err, result) => {
-						if (err){
-							throw err;
-						} else {
-							
-							res.send({"res" : "1", "msg" : "Movie added to favourites"});
-						}
-					});
-					conectionDB.end();
-				})
-				.catch((fail) => {
-					res.send({"res" : "0", "msg" : "Error connection to database"});
-				});
-			}
-		}
-
-	}
-})
-
-serverObj.delete("/DeleteMovieFav/:UserId/:IdMovie", (req, res) =>{
-
-	if (!JWT.checkJWT(req.cookies("JWT"))) {
-		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-	} else {
-
-		const movieId = req.params.IdMovie;
-		const ExtUserId = req.params.UserId;
-
-		if(movieId !== null && ExtUserId !== null){
-	
-			const conectionDB = mysql.createConnection({
-				"host": "localhost",
-				"user": "root",
-				"password": "root",
-				"database": "movieprojectdb"
-			});
-	
-			if (conectionDB){
-				const prom = new Promise((resolve, reject) => {
-					conectionDB.connect(function(err) {
-						if (err) {
-							reject(err);
-						}
-						resolve();
-					});
-				});
-				prom.then(() => {
-
-					const [values] = req.params;
-					const sql = `DELETE FROM bookmarks WHERE EXT_USRID = ${ExtUserId} AND REFID = ${movieId} `;
-					conectionDB.query(sql, values, (err, result) => {
-						if (err){
-							throw err;
-						} else {
-							res.send({"res" : "1", "msg" : "Movie deleted from favourites"});
-						}
-					});
-					conectionDB.end();
-				})
-			}
-		}
-	}
-
-});
-
-// serverObj.get("/getMoviesFav", (req, res) =>{
-
-// 	if (!JWT.checkJWT(req.cookies("JWT"))) {
-// 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-// 	} else {
-
-
-// 	}
-// })
-
-
-
-
-
 //OAUTH
 const {google} = require("googleapis");
 //import { google } from 'googleapis';
-let GOOGLE_CLIENT_SECRET=`${process.env.GOOGLE_CLIENT_SECRET}`;
-let GOOGLE_CLIENT_ID = `${process.env.GOOGLE_CLIENT_ID}`;
+let GOOGLE_CLIENT_SECRET="hgQOLqZ2MPLH-r0B9Glq5TdW";
+let GOOGLE_CLIENT_ID = "892702418247-bgj3ovrtauoh0i2ru4qs0j9tbg1rn1ma.apps.googleusercontent.com";
 const oauth2Client = new google.auth.OAuth2(
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -758,69 +650,22 @@ async function getGoogleUser(code) {
 				// throw new Error(error.message);
 			}
 		}
-serverObj.post("/login", (req, res) => {
-	//Look for the user name among current users
-	const conectionDB = mysql.createConnection({
-		"host": "localhost",
-		"user": "root",
-		"password": "root",
-		"database": "movieprojectdb"
-	});
-
-	if (conectionDB){
-		const prom = new Promise((resolve, reject) => {
-			conectionDB.connect(function(err) {
-				if (err) {
-					reject(err);
-				}
-				resolve();
-			});
-		});
-		prom.then(() => {
-			const sql = "SELECT USRID, IDAUTH, TOKEN FROM oauth2 WHERE EMAIL LIKE ?";
-			conectionDB.query(sql, [req.body.user], function (err, result) {
-				if (err){
-					throw err;
-				} else if (result.length){
-					if (result[0].PASS === req.body.pass){
-						//Generate JWT
-						const Payload = {
-							"user" : req.body.user,
-							"profile" : result[0].IDAUTH,
-							"iat" : new Date()
-						};
-						const jwt = JWT.buildJWT(Payload);
-						//Grant access based on profile
-						switch (result[0].IDAUTH) {
-						case "admin":
-						{
-							//Access as administrator
-							res.cookie("JWT", jwt, {"httpOnly" : true})
-								.send({"res" : "1", "msg" : "admin"});
-							break;
-						}
-						case "user":
-						{
-							//Access as player
-							res.cookie("JWT", jwt, {"httpOnly" : true})
-								.send({"res" : "1", "msg" : "usuario"});
-							break;
-						}
-						}
-					} else {
-						res.send({"res" : "0", "msg" : "Contraseña inválida!"});
-					}
-				} else {
-					res.send({"res" : "0", "msg" : "Usuario no registrado!"});
-				}
-			});
-			conectionDB.close();
-		})
-			.catch((fail) => {
-				res.send({"res" : "0", "msg" : "Unable to connect to database"});
-			});
-	}
-});
+		const Payload = {
+			"user" : req.body.user,
+			"profile" : "user",
+			"iat" : new Date()
+		};
+		const jwt = JWT(Payload);
+		//Grant access based on profile
+		switch (result[0].USER_PROFILE) {
+		case "admin":
+		{
+			//Access as administrator
+			res.cookie("JWT", jwt, {"httpOnly" : true})
+				.send({"res" : "1", "msg" : "admin"});
+			break;
+		}
+		}
 	}
 	return null;
 	//JWT
