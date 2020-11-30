@@ -650,22 +650,69 @@ async function getGoogleUser(code) {
 				// throw new Error(error.message);
 			}
 		}
-		const Payload = {
-			"user" : req.body.user,
-			"profile" : "user",
-			"iat" : new Date()
-		};
-		const jwt = JWT(Payload);
-		//Grant access based on profile
-		switch (result[0].USER_PROFILE) {
-		case "admin":
-		{
-			//Access as administrator
-			res.cookie("JWT", jwt, {"httpOnly" : true})
-				.send({"res" : "1", "msg" : "admin"});
-			break;
-		}
-		}
+serverObj.post("/login", (req, res) => {
+	//Look for the user name among current users
+	const conectionDB = mysql.createConnection({
+		"host": "localhost",
+		"user": "root",
+		"password": "root",
+		"database": "movieprojectdb"
+	});
+
+	if (conectionDB){
+		const prom = new Promise((resolve, reject) => {
+			conectionDB.connect(function(err) {
+				if (err) {
+					reject(err);
+				}
+				resolve();
+			});
+		});
+		prom.then(() => {
+			const sql = "SELECT USRID, IDAUTH, TOKEN FROM oauth2 WHERE EMAIL LIKE ?";
+			conectionDB.query(sql, [req.body.user], function (err, result) {
+				if (err){
+					throw err;
+				} else if (result.length){
+					if (result[0].PASS === req.body.pass){
+						//Generate JWT
+						const Payload = {
+							"user" : req.body.user,
+							"profile" : result[0].IDAUTH,
+							"iat" : new Date()
+						};
+						const jwt = JWT.buildJWT(Payload);
+						//Grant access based on profile
+						switch (result[0].IDAUTH) {
+						case "admin":
+						{
+							//Access as administrator
+							res.cookie("JWT", jwt, {"httpOnly" : true})
+								.send({"res" : "1", "msg" : "admin"});
+							break;
+						}
+						case "user":
+						{
+							//Access as player
+							res.cookie("JWT", jwt, {"httpOnly" : true})
+								.send({"res" : "1", "msg" : "usuario"});
+							break;
+						}
+						}
+					} else {
+						res.send({"res" : "0", "msg" : "Contraseña inválida!"});
+					}
+				} else {
+					res.send({"res" : "0", "msg" : "Usuario no registrado!"});
+				}
+			});
+			conectionDB.close();
+		})
+			.catch((fail) => {
+				res.send({"res" : "0", "msg" : "Unable to connect to database"});
+			});
+	}
+});
 	}
 	return null;
 	//JWT
