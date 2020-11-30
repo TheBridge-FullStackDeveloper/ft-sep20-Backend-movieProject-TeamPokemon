@@ -10,7 +10,7 @@ const JWT = require("./lib/jwt.js");
 const fetch = require("node-fetch");
 
 const MongoClient = require("mongodb").MongoClient;
-var ObjectId = require('mongodb').ObjectId; 
+let ObjectId = require("mongodb").ObjectId;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 client.connect(err => {
@@ -459,134 +459,59 @@ serverObj.get("/login", async (req, res) => {
 });
 
 serverObj.get("/SearchMovies/:Title", (req, res) =>{
-    //Secure end point
-    if (!JWT.checkJWT(req.cookies("JWT"))) {
-        res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-    } else {
-        let FronTitle = req.params.Title;
-        if (FronTitle !== null) {
-            //s= devuelve listado de peliculas que contienen esapalabra que buscaste
-            fetch(http://www.omdbapi.com/?s=${FronTitle}&apikey=${process.env.OmdbApiKey})
-                .then(res => res.json())
-                .then(data => {
-                    let Movies = Object.values(data);
-                    if (Movies[0] !== "False"){
-                        Movies[0].map(film => {
-                            return {
-                                // eslint-disable-next-line no-underscore-dangle
-                                "Id": O_${film._id},
-                                "Title" : film.Title,
-                                "Released" : film.Released,
-                                "Poster": film.Poster
-                            };
-                        });
-                        res.send({"Movies": Movies[0]});
-                    } else {
-                        try {
-                            MongoClient.connect(uri, (err, db) => {
-                                if (err) {
-                                    throw err;
-                                }
-                                let ObjectDB = db.db("MyOwnMovies");
-                                //$options : "i" key insensitive le da igual mayuscula o minuscula
-                                //$regex : .${FronTitle}. puede contener algo o no por delante y por detras
-                                ObjectDB.collection("Movies").find({"Title": {"$regex": .*${FronTitle}.*, "$options": "i"}})
-                                    .toArray((err, result) => {
-                                        if (result.length && !err){
-                                            let myMongoData = result.map(film =>{
-                                                return {
-                                                    // eslint-disable-next-line no-underscore-dangle
-                                                    "_Id": M_${film._id},
-                                                    "Title" : film.Title,
-                                                    "Released" : film.Released,
-                                                    "Poster": film.Poster
-                                                };
-                                            });
-                                            res.send({"Movies" : myMongoData});
-                                        } else {
-                                            res.send({"msg": "NotExist"});
-                                        }
-                                        db.close();
-                                    });
-                            });
-                        } catch (e) {
-                            return {"msg" : "ErrorConnection with MongoDB"};
-                        }
-                    }
-                })
-                .catch({"msg" : "ErrorConnection with Omdb"});
-        } else {
-            res.send({"msg" : "Empty Title"});
-        }
-    }
-});
-
 	//Secure end point
 	if (!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
 	} else {
 		let FronTitle = req.params.Title;
-		// let Director = req.params.Director;
-		// let Year = req.params.Year;
-		// let Genre = req.params.Genre;
 		if (FronTitle !== null) {
-
-	let FronTitle = req.params.Title;
-	if (FronTitle !== null) {
-
-		//s= devuelve listado de peliculas que contienen esapalabra que buscaste
-		fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=4c909483`)
-			.then(res => res.json())
-			.then(data => {
-
-				let Movies = Object.values(data);
-				if (Movies[0] !== "False"){
-
-					Movies[0].map(film => {
-						return {
-							// eslint-disable-next-line no-underscore-dangle
-							"Id": `O_${film._id}`,
-							"Title" : film.Title,
-							"Released" : film.Released,
-							"Poster": film.Poster
-						};
-
-					});
-					res.send({"Movies": Movies[0]});
-				} else {
-
-					try {
-						MongoClient.connect(uri, (err, db) => {
-							if (err) {
-								throw err;
-							}
-							let ObjectDB = db.db("MyOwnMovies");
-
-							//$options : "i" key insensitive le da igual mayuscula o minuscula
-							//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
-							ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
-								.toArray((err, result) => {
-
-									if (result.length && !err){
-										let myMongoData = result.map(film =>{
-											return {
-												// eslint-disable-next-line no-underscore-dangle
-												"_Id": `M_${film._id}`,
-												"Title" : film.Title,
-												"Released" : film.Released,
-												"Poster": film.Poster
-											};
-										});
-										res.send({"Movies" : myMongoData});
-									} else {
-										res.send({"msg": "NotExist"});
-									}
-
-									db.close();
-								});
+			//s= devuelve listado de peliculas que contienen esapalabra que buscaste
+			fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=${process.env.OmdbApiKey}`)
+				.then(res => res.json())
+				.then(data => {
+					let Movies = Object.values(data);
+					if (Movies[0] !== "False"){
+						Movies[0].map(film => {
+							return {
+								// eslint-disable-next-line no-underscore-dangle
+								"Id": `O_${film._id}`,
+								"Title" : film.Title,
+								"Released" : film.Released,
+								"Poster": film.Poster
+							};
 						});
-					} catch (e) {
-						return {"msg" : "ErrorConnection with MongoDB"};
+						res.send({"Movies": Movies[0]});
+					} else {
+						try {
+							MongoClient.connect(uri, (err, db) => {
+								if (err) {
+									throw err;
+								}
+								let ObjectDB = db.db("MyOwnMovies");
+								//$options : "i" key insensitive le da igual mayuscula o minuscula
+								//$regex : .${FronTitle}. puede contener algo o no por delante y por detras
+								ObjectDB.collection("Movies").find(`{"Title": {"$regex": .*${FronTitle}.*, "$options": "i"}}`)
+									.toArray((err, result) => {
+										if (result.length && !err){
+											let myMongoData = result.map(film =>{
+												return {
+													// eslint-disable-next-line no-underscore-dangle
+													"_Id": `M_${film._id}`,
+													"Title" : film.Title,
+													"Released" : film.Released,
+													"Poster": film.Poster
+												};
+											});
+											res.send({"Movies" : myMongoData});
+										} else {
+											res.send({"msg": "NotExist"});
+										}
+										db.close();
+									});
+							});
+						} catch (e) {
+							return {"msg" : "ErrorConnection with MongoDB"};
+						}
 					}
 				})
 				.catch({"msg" : "ErrorConnection with Omdb"});
@@ -595,6 +520,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 		}
 	}
 });
+
 
 serverObj.get("/FoundMovie/:Movie", (req, res) => {
 
@@ -712,24 +638,61 @@ async function getGoogleUser(code) {
 				// throw new Error(error.message);
 			}
 		}
-		const Payload = {
-			"user" : req.body.user,
-			"profile" : "user",
-			"iat" : new Date()
-		};
-		const jwt = JWT(Payload);
-		//Grant access based on profile
-		switch (result[0].USER_PROFILE) {
-		case "admin":
-		{
-			//Access as administrator
-			res.cookie("JWT", jwt, {"httpOnly" : true})
-				.send({"res" : "1", "msg" : "admin"});
-			break;
-		}
-		}
 	}
 	return null;
 	//JWT
-
 }
+
+//REGISTER USER OAUTH (POST)
+serverObj.post("register", (req, res) => {
+	//Validate new user data
+	const validationResults = validateRegisterData(req.body);
+	if (validationResults !== true) {
+		res.send({"res" : 0, "msg" : validationResults.msg});
+	} else {
+		const conectionDB = mysql.createConnection({
+			"host": "localhost",
+			"user": "root",
+			"password": "root",
+			"database": "movieprojectdb"
+		});
+
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
+				});
+			});
+			prom.then(() => {
+				const sql = "SELECT USRID, IDAUTH, TOKEN FROM oauth2 WHERE EMAIL LIKE ?";
+				conectionDB.query(sql, [req.body.email], function (err, result) {
+					if (err){
+						throw err;
+					} else if (result.length){
+						//User found already in db
+						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
+					} else {
+						//Proceed to store user in db table
+						const [values] = req.body;
+						const sql = "INSERT INTO oauth2 VALUES (NULL, ?, ?, ?, ?, ?, ?)";
+						conectionDB.query(sql, values, function (err, result) {
+							if (err){
+								throw err;
+							} else {
+								res.send({"res" : "1", "msg" : "Usuario registrado!"});
+
+							}
+						});
+					}
+				});
+				conectionDB.close();
+			})
+				.catch((fail) => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
+		}
+	}
+});
