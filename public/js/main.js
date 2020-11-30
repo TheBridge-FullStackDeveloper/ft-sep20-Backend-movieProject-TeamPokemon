@@ -35,6 +35,6 @@ function paintSearchedMovies(d, i){
 	let movieContainer = document.createElement("div");
 	movieContainer.id = `MovieContainer ${d[i]}`;
 
-	let titleMovie = document.createElement("h2");
+	// let titleMovie = document.createElement("h2");
 	// titleMovie.id = d.Search[0];
 }

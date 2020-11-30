@@ -12,11 +12,7 @@ const fetch = require("node-fetch");
 const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
-client.connect(err => {
-	const collection = client.db("test").collection("devices");
-	// perform actions on the collection object
-	client.close();
-});
+
 
 //Creation of Express server
 const serverObj = express();
@@ -75,60 +71,61 @@ const validateRegisterData = (data) => {
 
 const validateMovieData = (data) => {
 	if (data === undefined || data === null) {
-		return {"ret" : false, "msg" : "Datos de la película no definidos!"};}
+		return {"ret" : false, "msg" : "Datos de la película no definidos!"};
+	}
 
-//ID
-const validator = new validatorNode();
-let validatorOutput = validator.ValidateString(data.id, "id", /^M_[a-zA-Z0-9]+$/, true);
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//PHOTO
-validatorOutput = validator.ValidateString(data.photo, "carátula", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//TITLE
-validatorOutput = validator.ValidateString(data.title, "title", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//DIRECTOR
-validatorOutput = validator.ValidateString(data.director, "director", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//ACTORS
-validatorOutput = validator.ValidateString(data.actors, "actors", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//GENRE
-validatorOutput = validator.ValidateString(data.genre, "genre", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//YEAR
-validatorOutput = validator.ValidateString(data.year, "year", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//DURATION
-validatorOutput = validator.ValidateString(data.duration, "duration", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//LANGUAGE
-validatorOutput = validator.ValidateString(data.language, "language", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-//PLOT
-validatorOutput = validator.ValidateString(data.plot, "plot", "");
-if (!validatorOutput.ret) {
-	return validatorOutput.msg;
-}
-return true;
+	//ID
+	const validator = new validatorNode();
+	let validatorOutput = validator.ValidateString(data.id, "id", /^M_[a-zA-Z0-9]+$/, true);
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//PHOTO
+	validatorOutput = validator.ValidateString(data.photo, "carátula", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//TITLE
+	validatorOutput = validator.ValidateString(data.title, "title", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//DIRECTOR
+	validatorOutput = validator.ValidateString(data.director, "director", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//ACTORS
+	validatorOutput = validator.ValidateString(data.actors, "actors", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//GENRE
+	validatorOutput = validator.ValidateString(data.genre, "genre", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//YEAR
+	validatorOutput = validator.ValidateString(data.year, "year", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//DURATION
+	validatorOutput = validator.ValidateString(data.duration, "duration", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//LANGUAGE
+	validatorOutput = validator.ValidateString(data.language, "language", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	//PLOT
+	validatorOutput = validator.ValidateString(data.plot, "plot", "");
+	if (!validatorOutput.ret) {
+		return validatorOutput.msg;
+	}
+	return true;
 };
 
 
@@ -180,9 +177,9 @@ serverObj.post("register", (req, res) => {
 				});
 				conectionDB.close();
 			})
-			.catch((fail) => {
-				res.send({"res" : "0", "msg" : "Error connection to database"});
-			});
+				.catch((fail) => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
 		}
 	}
 });
@@ -319,7 +316,7 @@ serverObj.post("/createMovie", (req, res) => {
 			res.send({"res" : 0, "msg" : validationResults.msg});
 		} else {
 			try {
-				MongoClient.connect(uri, (err, db) => {
+				client.connect(uri, (err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -358,7 +355,8 @@ serverObj.post("/createMovie", (req, res) => {
 //EDITION OF MOVIE IN MONGO (PUT)
 serverObj.put("/editMovie", (req, res) => {
 	//Secure end point
-	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
+	//!JWT.checkJWT(req.cookies("JWT"))) {
+	if (false){
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
 	} else {
 		//Validate movie data
@@ -367,7 +365,7 @@ serverObj.put("/editMovie", (req, res) => {
 			res.send({"res" : 0, "msg" : validationResults.msg});
 		} else {
 			try {
-				MongoClient.connect(uri, (err, db) => {
+				client.connect(uri, (err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -419,7 +417,7 @@ serverObj.delete("/deleteMovie", (req, res) => {
 			return validatorOutput.msg;
 		} else {
 			try {
-				MongoClient.connect(uri, (err, db) => {
+				client.connect(uri, (err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -490,7 +488,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 					} else {
 
 						try {
-							MongoClient.connect(uri, (err, db) => {
+							client.connect(uri, (err, db) => {
 								if (err) {
 									throw err;
 								}
@@ -529,7 +527,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 			res.send({"msg" : "Empty Title"});
 		}
 	}
-	
+
 });
 
 serverObj.get("/FoundMovie/:Movie", (req, res) => {
@@ -547,7 +545,7 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 				.then(data =>{
 
 					if (data) {
-						res.send(data);
+						res.send({...data, "id": movieSelected});
 					} else {
 						res.send({"msg" : "NoData"});
 					}
@@ -557,7 +555,7 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 		} else if (movieSelected[0] === "M"){
 
 			try {
-				MongoClient.connect(uri, (err, db) => {
+				client.connect(uri, (err, db) => {
 
 					if (err) {
 						throw err;
@@ -568,7 +566,7 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 						.toArray((err, result) => {
 
 							if (result.length && !err){
-								res.send(result);
+								res.send({...result, "id": movieSelected});
 							} else {
 								res.send({"msg": "NotExist"});
 							}
@@ -591,119 +589,173 @@ serverObj.get("/FoundMovie/:Movie", (req, res) => {
 
 //LOGOUT (POST)
 //
-serverObj.post("/logout", (req, res) => {
+serverObj.get("/logout", (req, res) => {
 	//TODO
 });
 
-serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req,res) => {
+serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req, res) => {
 
-	if (!JWT.checkJWT(req.cookies("JWT"))) {
-		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-	} else {
+	// if (!JWT.checkJWT(req.cookies("JWT"))) {
+	// 	res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
+	// } else {
 
-		let movieId = req.params.IdMovie;
-		let ExtUserId = req.params.UserId;
+	let movieId = req.params.IdMovie;
+	let ExtUserId = req.params.UserId;
 
-		if(movieId !== null && ExtUserId !== null){
-	
-			const conectionDB = mysql.createConnection({
-				"host": "localhost",
-				"user": "root",
-				"password": "root",
-				"database": "movieprojectdb"
-			});
-	
-			if (conectionDB){
-				const prom = new Promise((resolve, reject) => {
-					conectionDB.connect(function(err) {
-						if (err) {
-							reject(err);
-						}
-						resolve();
-					});
+	if (movieId !== null && ExtUserId !== null){
+
+		const conectionDB = mysql.createConnection({
+			"host": "34.89.115.151",
+			"user": "root",
+			"password": "JhMcl9BlvHNnF2v8",
+			"database": "movieprojectdb"
+		});
+
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
 				});
-				prom.then(() => {
-					const [values] = req.params;
-					//QUESTION Debo poner las interrogaciones aqui? que es exactamente el sql inyection
-					const sql = `INSERT INTO bookmarks(EXT_USRID, REFID) VALUES (${ExtUserId},${movieId})`;
+			});
+			prom.then(() => {
+				const values = Object.values(req.params);
+				const sql = "SELECT EXT_USRID FROM bookmarks WHERE EXT_USRID LIKE ? AND REFID LIKE ?";
 
-					conectionDB.query(sql, values, (err, result) => {
-						if (err){
-							throw err;
-						} else {
-							
-							res.send({"res" : "1", "msg" : "Movie added to favourites"});
-						}
-					});
+				conectionDB.query(sql, values, (err, result) => {
+					if (err){
+						throw err;
+					} else if (result.length){
+						//Movie found already in db
+						res.send({"res" : "0", "msg" : "Movie already added in fav"});
+					} else {
+						//Proceed to store user in db table
+						const values = Object.values(req.params);
+						//QUESTION Debo poner las interrogaciones aqui? que es exactamente el sql inyection
+						const sql = "INSERT INTO bookmarks(EXT_USRID, REFID) VALUES (?, ?)";
+
+						conectionDB.query(sql, values, (err) => {
+							if (err){
+								throw err;
+							} else {
+
+								res.send({"res" : "1", "msg" : "Movie added to favourites"});
+							}
+							conectionDB.end();
+						});
+					}
+
 					conectionDB.end();
-				})
-				.catch((fail) => {
+				});
+			})
+
+				.catch((err) => {
+				// eslint-disable-next-line no-console
+					console.log(err);
 					res.send({"res" : "0", "msg" : "Error connection to database"});
 				});
-			}
 		}
-
 	}
-})
+
+	// }
+});
 
 serverObj.delete("/DeleteMovieFav/:UserId/:IdMovie", (req, res) =>{
 
-	if (!JWT.checkJWT(req.cookies("JWT"))) {
-		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-	} else {
+	// if (!JWT.checkJWT(req.cookies("JWT"))) {
+	// 	res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
+	// } else {
 
-		const movieId = req.params.IdMovie;
-		const ExtUserId = req.params.UserId;
+	const movieId = req.params.IdMovie;
+	const ExtUserId = req.params.UserId;
 
-		if(movieId !== null && ExtUserId !== null){
-	
-			const conectionDB = mysql.createConnection({
-				"host": "localhost",
-				"user": "root",
-				"password": "root",
-				"database": "movieprojectdb"
-			});
-	
-			if (conectionDB){
-				const prom = new Promise((resolve, reject) => {
-					conectionDB.connect(function(err) {
-						if (err) {
-							reject(err);
-						}
-						resolve();
-					});
+	if (movieId !== null && ExtUserId !== null){
+
+		const conectionDB = mysql.createConnection({
+			"host": "34.89.115.151",
+			"user": "root",
+			"password": "JhMcl9BlvHNnF2v8",
+			"database": "movieprojectdb"
+		});
+
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
 				});
-				prom.then(() => {
+			});
+			prom.then(() => {
 
-					const [values] = req.params;
-					const sql = `DELETE FROM bookmarks WHERE EXT_USRID = ${ExtUserId} AND REFID = ${movieId} `;
-					conectionDB.query(sql, values, (err, result) => {
-						if (err){
-							throw err;
-						} else {
-							res.send({"res" : "1", "msg" : "Movie deleted from favourites"});
-						}
-					});
-					conectionDB.end();
-				})
-			}
+				const values = Object.values(req.params);
+				const sql = "DELETE FROM bookmarks WHERE EXT_USRID = ? AND REFID = ? ";
+				conectionDB.query(sql, values, (err, result) => {
+					if (err){
+						throw err;
+					} else {
+						res.send({"res" : "1", "msg" : "Movie deleted from favourites"});
+					}
+				});
+				conectionDB.end();
+			});
 		}
 	}
+	// }
 
 });
 
-// serverObj.get("/getMoviesFav", (req, res) =>{
+serverObj.get("/getMoviesFav/:UserId", (req, res) =>{
 
-// 	if (!JWT.checkJWT(req.cookies("JWT"))) {
-// 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
-// 	} else {
+	// if (!JWT.checkJWT(req.cookies("JWT"))) {
+	// 	res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
+	// } else {
 
+	const ExtUserId = req.params.UserId;
 
-// 	}
-// })
+	if (ExtUserId !== null){
 
+		const conectionDB = mysql.createConnection({
+			"host": "34.89.115.151",
+			"user": "root",
+			"password": "JhMcl9BlvHNnF2v8",
+			"database": "movieprojectdb"
+		});
 
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
+				});
+			});
+			prom.then(() => {
+				const [values] = Object.values(req.params);
+				//QUESTION Debo poner las interrogaciones aqui? que es exactamente el sql inyection
+				const sql = "SELECT REFID FROM bookmarks WHERE EXT_USRID LIKE ?";
 
+				conectionDB.query(sql, values, (err, result) => {
+					if (err){
+						throw err;
+					} else {
+
+						res.send({"res" : "1", "msg" : "Your fav movies", "Favourites" : result});
+					}
+					conectionDB.end();
+				});
+			})
+				.catch(() => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
+		}
+	}
+	// }
+});
 
 
 //OAUTH
