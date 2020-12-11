@@ -6,6 +6,7 @@ const corsEnable = require("cors");
 const cookieParser = require("cookie-parser");
 const validatorNode = require("./lib/validatorMoviesNode.class.js");
 const JWT = require("./lib/jwt.js");
+require("dotenv").config();
 //Se puede usar tambien el paquete npm request
 const fetch = require("node-fetch");
 
@@ -316,7 +317,7 @@ serverObj.post("/createMovie", (req, res) => {
 			res.send({"res" : 0, "msg" : validationResults.msg});
 		} else {
 			try {
-				client.connect(uri, (err, db) => {
+				client.connect((err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -365,7 +366,7 @@ serverObj.put("/editMovie", (req, res) => {
 			res.send({"res" : 0, "msg" : validationResults.msg});
 		} else {
 			try {
-				client.connect(uri, (err, db) => {
+				client.connect((err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -417,7 +418,7 @@ serverObj.delete("/deleteMovie", (req, res) => {
 			return validatorOutput.msg;
 		} else {
 			try {
-				client.connect(uri, (err, db) => {
+				client.connect((err, db) => {
 					if (err) {
 						throw err;
 					}
@@ -488,7 +489,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 					} else {
 
 						try {
-							client.connect(uri, (err, db) => {
+							client.connect((err, db) => {
 								if (err) {
 									throw err;
 								}
@@ -503,7 +504,7 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 											let myMongoData = result.map(film =>{
 												return {
 													// eslint-disable-next-line no-underscore-dangle
-													"_Id": `M_${film._id}`,
+													"Id": `M_${film._id}`,
 													"Title" : film.Title,
 													"Released" : film.Released,
 													"Poster": film.Poster
@@ -530,61 +531,63 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 
 });
 
-serverObj.get("/FoundMovie/:Movie", (req, res) => {
-
-	let movieSelected = req.params.Movie;
-
-	if (movieSelected !== null){
-		if (movieSelected[0] === "O"){
-
+function findMovieById(movieSelected) {
+	return new Promise((resolve) => {
+		if (movieSelected !== null){
 			const cropPosition = 2;
 			const id = movieSelected.substr(cropPosition);
+			if (movieSelected[0] === "O"){
 
-			fetch(`http://www.omdbapi.com/?i=${id}&apikey=${process.env.OmdbApiKey}`)
-				.then(res => res.json())
-				.then(data =>{
+				fetch(`http://www.omdbapi.com/?i=${id}&apikey=${process.env.OmdbApiKey}`)
+					.then(res => res.json())
+					.then(data =>{
 
-					if (data) {
-						res.send({...data, "id": movieSelected});
-					} else {
-						res.send({"msg" : "NoData"});
-					}
-				})
-				.catch(() => res.send({"msg" : "Error"}));
+						if (data) {
+							const {Title, Director, Actors, Genre, Plot, Runtime, Language, Released} = data;
+							resolve({Title, Director, Actors, Genre, Plot, Runtime, Language, Released, "Id": movieSelected});
+						} else {
+							resolve({"msg" : "NoData"});
+						}
+					})
+					.catch(() => resolve({"msg" : "Error"}));
 
-		} else if (movieSelected[0] === "M"){
+			} else if (movieSelected[0] === "M"){
 
-			try {
-				client.connect(uri, (err, db) => {
+				try {
+					client.connect((err, db) => {
 
-					if (err) {
-						throw err;
-					}
+						if (err) {
+							throw err;
+						}
 
-					let ObjectDB = db.db("MyOwnMovies");
-					ObjectDB.collection("Movies").find({"_Id": {"$regex": `M_${movieSelected}`}})
-						.toArray((err, result) => {
-
-							if (result.length && !err){
-								res.send({...result, "id": movieSelected});
+						let ObjectDB = db.db("MyOwnMovies");
+						ObjectDB.collection("Movies").findOne({"_id": ObjectId(id)}, (err, result) => {
+							if (result && !err){
+								const {Title, Director, Actors, Genre, Plot, Runtime, Language, Released} = result;
+								resolve({Title, Director, Actors, Genre, Plot, Runtime, Language, Released, "Id": movieSelected});
 							} else {
-								res.send({"msg": "NotExist"});
+								resolve({"msg": "NotExist"});
 							}
 
 							db.close();
 						});
-				});
+					});
 
-			} catch (e) {
-				res.send({"msg" : "ErrorConnection with MongoDB"});
+				} catch (e) {
+					resolve({"msg" : "ErrorConnection with MongoDB"});
+				}
+			} else {
+				resolve({"msg" : "IncorrectId"});
 			}
 		} else {
-			res.send({"msg" : "IncorrectId"});
+			resolve({"msg" : "NoId"});
 		}
-	} else {
-		res.send({"msg" : "NoId"});
-	}
+	});
+}
 
+
+serverObj.get("/FoundMovie/:Movie", async (req, res) => {
+	res.send(await findMovieById(req.params.Movie));
 });
 
 //LOGOUT (POST)
@@ -621,6 +624,7 @@ serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req, res) => {
 				});
 			});
 			prom.then(() => {
+				//req.params no es iterable por tanto hay que convertirlo a array
 				const values = Object.values(req.params);
 				const sql = "SELECT EXT_USRID FROM bookmarks WHERE EXT_USRID LIKE ? AND REFID LIKE ?";
 
@@ -643,7 +647,7 @@ serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req, res) => {
 
 								res.send({"res" : "1", "msg" : "Movie added to favourites"});
 							}
-							conectionDB.end();
+
 						});
 					}
 
@@ -690,17 +694,31 @@ serverObj.delete("/DeleteMovieFav/:UserId/:IdMovie", (req, res) =>{
 				});
 			});
 			prom.then(() => {
-
+				//req.params no es iterable por tanto hay que convertirlo a array
 				const values = Object.values(req.params);
-				const sql = "DELETE FROM bookmarks WHERE EXT_USRID = ? AND REFID = ? ";
+				const sql = "SELECT EXT_USRID FROM bookmarks WHERE EXT_USRID LIKE ? AND REFID LIKE ?";
+
 				conectionDB.query(sql, values, (err, result) => {
 					if (err){
 						throw err;
+					} else if (result.length){
+
+						const values = Object.values(req.params);
+						const sql = "DELETE FROM bookmarks WHERE EXT_USRID = ? AND REFID = ? ";
+						conectionDB.query(sql, values, (err) => {
+							if (err){
+								throw err;
+							} else {
+								res.send({"res" : "1", "msg" : "Movie deleted from favourites"});
+							}
+						});
+
 					} else {
-						res.send({"res" : "1", "msg" : "Movie deleted from favourites"});
+						res.send({"res" : "0", "msg" : "Movie not added to favourites yet"});
 					}
+
+					conectionDB.end();
 				});
-				conectionDB.end();
 			});
 		}
 	}
@@ -708,7 +726,7 @@ serverObj.delete("/DeleteMovieFav/:UserId/:IdMovie", (req, res) =>{
 
 });
 
-serverObj.get("/getMoviesFav/:UserId", (req, res) =>{
+serverObj.get("/GetMoviesFav/:UserId", (req, res) =>{
 
 	// if (!JWT.checkJWT(req.cookies("JWT"))) {
 	// 	res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
@@ -739,12 +757,19 @@ serverObj.get("/getMoviesFav/:UserId", (req, res) =>{
 				//QUESTION Debo poner las interrogaciones aqui? que es exactamente el sql inyection
 				const sql = "SELECT REFID FROM bookmarks WHERE EXT_USRID LIKE ?";
 
-				conectionDB.query(sql, values, (err, result) => {
+				conectionDB.query(sql, values, async (err, result) => {
 					if (err){
 						throw err;
-					} else {
+					} else if (result.length) {
+						const Favourites = [];
+						for (let i = 0; i < result.length; i++) {
+							const {Id, Title, Released, Poster} = await findMovieById(result[i].REFID);
+							Favourites.push({Id, Title, Released, Poster});
+						}
 
-						res.send({"res" : "1", "msg" : "Your fav movies", "Favourites" : result});
+						res.send({"res" : "1", "msg" : "Your fav movies", Favourites});
+					} else {
+						res.send({"msg": "User doesn't have fav films"});
 					}
 					conectionDB.end();
 				});
@@ -760,6 +785,7 @@ serverObj.get("/getMoviesFav/:UserId", (req, res) =>{
 
 //OAUTH
 const {google} = require("googleapis");
+const { ObjectId } = require("mongodb");
 //import { google } from 'googleapis';
 let GOOGLE_CLIENT_SECRET=`${process.env.GOOGLE_CLIENT_SECRET}`;
 let GOOGLE_CLIENT_ID = `${process.env.GOOGLE_CLIENT_ID}`;
