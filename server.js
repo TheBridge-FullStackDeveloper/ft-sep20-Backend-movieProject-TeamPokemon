@@ -11,8 +11,38 @@ require("dotenv").config();
 const fetch = require("node-fetch");
 
 const MongoClient = require("mongodb").MongoClient;
+let ObjectId = require("mongodb").ObjectId;
 const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
+
+const {google} = require("googleapis");
+const GOOGLE_CLIENT_ID = `${process.env.GOOGLE_CLIENT_ID}`;
+const GOOGLE_CLIENT_SECRET=`${process.env.GOOGLE_CLIENT_SECRET}`;
+const oauth2Client = new google.auth.OAuth2(
+	GOOGLE_CLIENT_ID,
+	GOOGLE_CLIENT_SECRET,
+	/*id_token
+   * This is where Google will redirect the user after they
+   * give permission to your application
+   */
+	"http://localhost:8888/login"
+);
+function getGoogleAuthURL() {
+	/*
+     * Generate a url that asks permissions to the user's email and profile
+     */
+	const scopes = [
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://www.googleapis.com/auth/userinfo.email",
+	];
+
+	return oauth2Client.generateAuthUrl({
+		"access_type": "offline",
+		"prompt": "consent",
+		// If you only need one scope you can pass it as string
+		"scope": scopes
+	});
+}
 
 
 //Creation of Express server
@@ -68,7 +98,6 @@ const validateRegisterData = (data) => {
 	}
 	return true;
 };
-
 
 const validateMovieData = (data) => {
 	if (data === undefined || data === null) {
@@ -130,6 +159,89 @@ const validateMovieData = (data) => {
 };
 
 
+//OAUTH
+
+
+async function getGoogleUser(code) {
+	if (code) {
+		const { tokens } = await oauth2Client.getToken(code);
+		oauth2Client.setCredentials(tokens);
+		if (tokens.id_token && tokens.access_token) {
+			// Fetch the user's profile with the access token and bearer
+			try {
+
+				const res = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
+					"headers": {
+						"Authorization": `Bearer ${tokens.id_token}`
+					}
+				});
+				const googleUser = await res.json();
+				return googleUser;
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.log(error);
+				// throw new Error(error.message);
+			}
+		}
+	}
+	return null;
+	//JWT
+}
+
+//REGISTER USER OAUTH (POST)
+serverObj.post("registerGoogle", (req, res) => {
+	//Validate new user data
+	const validationResults = validateRegisterData(req.body);
+	if (validationResults !== true) {
+		res.send({"res" : 0, "msg" : validationResults.msg});
+	} else {
+		const conectionDB = mysql.createConnection({
+			"host": "localhost",
+			"user": "root",
+			"password": "root",
+			"database": "movieprojectdb"
+		});
+
+		if (conectionDB){
+			const prom = new Promise((resolve, reject) => {
+				conectionDB.connect(function(err) {
+					if (err) {
+						reject(err);
+					}
+					resolve();
+				});
+			});
+			prom.then(() => {
+				const sql = "SELECT USRID, IDAUTH, TOKEN FROM oauth2 WHERE EMAIL LIKE ?";
+				conectionDB.query(sql, [req.body.email], function (err, result) {
+					if (err){
+						throw err;
+					} else if (result.length){
+						//User found already in db
+						res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
+					} else {
+						//Proceed to store user in db table
+						const [values] = req.body;
+						const sql = "INSERT INTO oauth2 VALUES (NULL, ?, ?, ?, ?, ?, ?)";
+						conectionDB.query(sql, values, function (err) {
+							if (err){
+								throw err;
+							} else {
+								res.send({"res" : "1", "msg" : "Usuario registrado!"});
+
+							}
+						});
+					}
+				});
+				conectionDB.close();
+			})
+				.catch(() => {
+					res.send({"res" : "0", "msg" : "Error connection to database"});
+				});
+		}
+	}
+});
+
 //------------------ ROUTING -------------------//
 //REGISTER USER (POST)
 serverObj.post("register", (req, res) => {
@@ -185,7 +297,7 @@ serverObj.post("register", (req, res) => {
 	}
 });
 
-//REGISTER USER (POST OAUTH)
+//REGISTER USER (POST)
 serverObj.post("AUTH", (req, res) => {
 	const conectionDB = mysql.createConnection({
 		"host": "localhost",
@@ -305,7 +417,7 @@ serverObj.post("/login", (req, res) => {
 	}
 });
 
-//Create movie in MongoDB (POST)
+//CREATION OF MOVIE IN MONGO (POST)
 serverObj.post("/createMovie", (req, res) => {
 	//Secure end point
 	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
@@ -353,8 +465,8 @@ serverObj.post("/createMovie", (req, res) => {
 	}
 });
 
-//EDITION OF MOVIE IN MONGO (PUT)
-serverObj.put("/editMovie", (req, res) => {
+//EDITION OF MOVIE IN MONGO (POST)
+serverObj.post("/editMovie", (req, res) => {
 	//Secure end point
 	//!JWT.checkJWT(req.cookies("JWT"))) {
 	if (false){
@@ -405,8 +517,8 @@ serverObj.put("/editMovie", (req, res) => {
 	}
 });
 
-//DELETION OF MOVIE IN MONGO (DELETE)
-serverObj.delete("/deleteMovie", (req, res) => {
+//DELETION OF MOVIE IN MONGO (POST)
+serverObj.post("/deleteMovie", (req, res) => {
 	//Secure end point
 	if (false){//!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
@@ -463,18 +575,14 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 	if (!JWT.checkJWT(req.cookies("JWT"))) {
 		res.send({"res" : 0, "msg" : "Access with credentials not allowed!"});
 	} else {
-
 		let FronTitle = req.params.Title;
 		if (FronTitle !== null) {
-
 			//s= devuelve listado de peliculas que contienen esapalabra que buscaste
 			fetch(`http://www.omdbapi.com/?s=${FronTitle}&apikey=${process.env.OmdbApiKey}`)
 				.then(res => res.json())
 				.then(data => {
-
 					let Movies = Object.values(data);
 					if (Movies[0] !== "False"){
-
 						Movies[0].map(film => {
 							return {
 								// eslint-disable-next-line no-underscore-dangle
@@ -483,23 +591,19 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 								"Released" : film.Released,
 								"Poster": film.Poster
 							};
-
 						});
 						res.send({"Movies": Movies[0]});
 					} else {
-
 						try {
 							client.connect((err, db) => {
 								if (err) {
 									throw err;
 								}
 								let ObjectDB = db.db("MyOwnMovies");
-
 								//$options : "i" key insensitive le da igual mayuscula o minuscula
-								//$regex : .*${FronTitle}.* puede contener algo o no por delante y por detras
-								ObjectDB.collection("Movies").find({"Title": {"$regex": `.*${FronTitle}.*`, "$options": "i"}})
+								//$regex : .${FronTitle}. puede contener algo o no por delante y por detras
+								ObjectDB.collection("Movies").find(`{"Title": {"$regex": .*${FronTitle}.*, "$options": "i"}}`)
 									.toArray((err, result) => {
-
 										if (result.length && !err){
 											let myMongoData = result.map(film =>{
 												return {
@@ -514,7 +618,6 @@ serverObj.get("/SearchMovies/:Title", (req, res) =>{
 										} else {
 											res.send({"msg": "NotExist"});
 										}
-
 										db.close();
 									});
 							});
@@ -541,6 +644,7 @@ function findMovieById(movieSelected) {
 				fetch(`http://www.omdbapi.com/?i=${id}&apikey=${process.env.OmdbApiKey}`)
 					.then(res => res.json())
 					.then(data =>{
+
 
 						if (data) {
 							const {Title, Director, Actors, Genre, Plot, Runtime, Language, Released} = data;
@@ -589,12 +693,13 @@ function findMovieById(movieSelected) {
 serverObj.get("/FoundMovie/:Movie", async (req, res) => {
 	res.send(await findMovieById(req.params.Movie));
 });
+// serverObj.get();
 
 //LOGOUT (POST)
 //
-serverObj.get("/logout", (req, res) => {
-	//TODO
-});
+// serverObj.get("/logout", (req, res) => {
+// 	//TODO
+// });
 
 serverObj.post("/AddMovieFav/:UserId/:IdMovie", (req, res) => {
 
@@ -781,79 +886,3 @@ serverObj.get("/GetMoviesFav/:UserId", (req, res) =>{
 	}
 	// }
 });
-
-
-//OAUTH
-const {google} = require("googleapis");
-const { ObjectId } = require("mongodb");
-//import { google } from 'googleapis';
-let GOOGLE_CLIENT_SECRET=`${process.env.GOOGLE_CLIENT_SECRET}`;
-let GOOGLE_CLIENT_ID = `${process.env.GOOGLE_CLIENT_ID}`;
-const oauth2Client = new google.auth.OAuth2(
-	GOOGLE_CLIENT_ID,
-	GOOGLE_CLIENT_SECRET,
-	/*id_token
-   * This is where Google will redirect the user after they
-   * give permission to your application
-   */
-	"http://localhost:8888/login"
-);
-function getGoogleAuthURL() {
-	/*
-     * Generate a url that asks permissions to the user's email and profile
-     */
-	const scopes = [
-		"https://www.googleapis.com/auth/userinfo.profile",
-		"https://www.googleapis.com/auth/userinfo.email",
-	];
-
-	return oauth2Client.generateAuthUrl({
-		"access_type": "offline",
-		"prompt": "consent",
-		// If you only need one scope you can pass it as string
-		"scope": scopes
-	});
-}
-
-async function getGoogleUser(code) {
-	if (code) {
-		const { tokens } = await oauth2Client.getToken(code);
-		oauth2Client.setCredentials(tokens);
-		if (tokens.id_token && tokens.access_token) {
-			// Fetch the user's profile with the access token and bearer
-			try {
-
-				const res = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
-					"headers": {
-						"Authorization": `Bearer ${tokens.id_token}`
-					}
-				});
-				const googleUser = await res.json();
-				return googleUser;
-			} catch (error) {
-				// eslint-disable-next-line no-console
-				console.log(error);
-				// throw new Error(error.message);
-			}
-		}
-		const Payload = {
-			"user" : req.body.user,
-			"profile" : "user",
-			"iat" : new Date()
-		};
-		const jwt = JWT(Payload);
-		//Grant access based on profile
-		switch (result[0].USER_PROFILE) {
-		case "admin":
-		{
-			//Access as administrator
-			res.cookie("JWT", jwt, {"httpOnly" : true})
-				.send({"res" : "1", "msg" : "admin"});
-			break;
-		}
-		}
-	}
-	return null;
-	//JWT
-
-}
