@@ -16,8 +16,8 @@ const uri = "mongodb+srv://PokemonTeam:5pokemon@pokemon.afmh3.mongodb.net?retryW
 const client = new MongoClient(uri, { "useNewUrlParser": true, "useUnifiedTopology": true });
 
 const {google} = require("googleapis");
-const GOOGLE_CLIENT_ID = `${process.env.GOOGLE_CLIENT_ID}`;
-const GOOGLE_CLIENT_SECRET=`${process.env.GOOGLE_CLIENT_SECRET}`;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET= process.env.GOOGLE_CLIENT_SECRET;
 const oauth2Client = new google.auth.OAuth2(
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -297,51 +297,6 @@ serverObj.post("register", (req, res) => {
 	}
 });
 
-//REGISTER USER (POST)
-serverObj.post("AUTH", (req, res) => {
-	const conectionDB = mysql.createConnection({
-		"host": "localhost",
-		"user": "root",
-		"password": "root",
-		"database": "movieprojectdb"});
-
-
-	if (conectionDB){
-		const prom = new Promise((resolve, reject) => {
-			conectionDB.connect(function(err) {
-				if (err) {
-					reject(err);
-				}
-				resolve();
-			});
-		});
-		prom.then(() => {
-			const sql = `SELECT USRID FROM Oauth2 WHERE EMAIL LIKE '${req.body.email}'`;
-			conectionDB.query(sql, function (err, result) {
-				if (err){
-					throw err;
-				} else if (result.length){
-					//User found already in db
-					res.send({"res" : "0", "msg" : "Usuario ya registrado!"});
-				} else {
-					//Proceed to store user in db table
-					const sql = `INSERT INTO users VALUES (NULL, '${req.body.email}', '${req.body.name}', '${req.body.token}', '${req.body.id_auth}')`;
-					conectionDB.query(sql, function (err, result) {
-						if (err){
-							throw err;
-						} else {
-							res.send({"res" : "1", "msg" : "Usuario registrado!"});
-
-						}
-					});
-				}
-			});
-		})
-			.catch((fail) => {
-				res.send({"res" : "0", "msg" : "Error connection to database"});
-			});
-	}
-});
 //CREDENTIALS CHECKOUT (POST)
 serverObj.post("/login", (req, res) => {
 	//Validate credentials
@@ -558,7 +513,7 @@ serverObj.post("/deleteMovie", (req, res) => {
 });
 
 
-serverObj.get("/loginG", (req, res) => {
+serverObj.get("/redirectGoogle", (req, res) => {
 	res.redirect(getGoogleAuthURL());
 });
 
