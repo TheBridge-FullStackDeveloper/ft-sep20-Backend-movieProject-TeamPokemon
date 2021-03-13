@@ -1,0 +1,9 @@
+/*ARCHIVO DE RESET DE LOS ESTILOS DEL NAVEGADOR*/
+:root{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+p{
+    margin: 0%;
+}

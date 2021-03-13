@@ -1,0 +1,57 @@
+/*MAIN NAV-BAR*/
+#navBar{
+    position: fixed;
+    top: 0px;
+    width: 95%;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: cornsilk;
+    font: {
+        family: 'Ubuntu', sans-serif;
+        size: 1em;
+    }
+    & #btnCreate{
+        width: 57%;
+        display: flex;
+        justify-content: space-evenly;
+        margin-right: 2px;
+        padding: .5em .2em;
+        background-color: darkslateblue;
+        color: cornsilk;
+        & i{
+            color: cornsilk;;
+        }
+    }
+    & #btnGetBack{
+        width: 37%;
+        display: flex;
+        justify-content: space-evenly;
+        margin-left: 2px;
+        padding: .5em .2em;
+        background-color: darkslateblue;
+        color: cornsilk;
+        & i{
+            color: cornsilk;;
+        }
+    }
+}
+
+/*FORMATO TABLET*/
+@media only screen and (min-width: 768px){
+    #navBar{
+        font: {
+            size: 1.5em;
+        }
+        & #btnCreate{
+            padding: .8em .2em;
+        }
+        & #btnGetBack{
+            width: 39.5%;
+            padding: .8em .2em;
+        }
+    }    
+}
+
+/*FORMATO LAPTOP-DESKTOP*/
+@media only screen and (min-width: 1366px){
+}

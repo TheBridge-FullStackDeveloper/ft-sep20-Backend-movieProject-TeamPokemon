@@ -1,0 +1,97 @@
+/* LOGIN CONTROLS */
+#loginContainer{
+    width: 100%;
+    font: {
+        family: 'Ubuntu', sans-serif;
+        size: 1em;
+    }
+    & .editElements{
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        border-bottom: 1px solid lightgray;
+        font: {
+            family: 'Ubuntu', sans-serif;
+        }
+        & label{
+            width: 100%;
+            background-color: ghostwhite;
+            color: grey;
+            padding: .2em .5em;
+            font: {
+                size: .9em;
+            }
+        }
+        & input{
+            width: 100%;
+            border: 0px;
+            padding: .4em .5em;
+            font: {
+                size: 1.1em;
+            }
+        }
+    }
+    & input[type=submit]{
+        display: flex;
+        width: 30%;
+        font: {
+            family: 'Ubuntu', sans-serif;
+            size: 1em;
+        }
+        background-color: darkslateblue;
+        color: cornsilk;
+        margin: .5em auto;
+        padding: .5em .2em;
+        height: 8vh;
+    }
+    & #signUp{
+        color: darkslateblue;
+        width: 35%;
+        margin: auto;
+        text-align: center;
+        padding: 1em 0%;
+        font: {
+            family: 'Ubuntu', sans-serif;
+            size: 1em;
+        }
+    }
+}
+
+/*FORMATO TABLET*/
+@media only screen and (min-width: 768px){
+    #loginContainer{
+        position: absolute;
+        top: 60vh;
+        height: 15vh;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: center;
+        margin: auto;
+        font-size: 1.5em;
+        & .editElements{
+            height: 50%;
+            width: 80%;
+            margin-top: .5em;
+            & label{
+                height: 30%;
+            }
+        }
+        & input[type=submit]{
+            height: 7vh;
+            margin-top: 1em;
+        }
+    }
+}
+
+/*FORMATO LAPTOP-DESKTOP*/
+@media only screen and (min-width: 1366px){
+    #loginContainer{
+        top: 50vh;
+        width: 40%;
+        margin-left: 30%;
+        & .editElements{
+            width: 100%;
+        }
+    }
+}

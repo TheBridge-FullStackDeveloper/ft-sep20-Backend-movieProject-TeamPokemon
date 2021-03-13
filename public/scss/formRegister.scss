@@ -1,0 +1,80 @@
+/* MOBILE FIRST */
+#formRegister{
+    position: absolute;
+    z-index: 500;
+    width: 100%;
+    top: -600px;
+    & #contUserData{
+        display: flex;
+        flex-wrap: wrap;
+        & .editElements:first-child{
+            border-bottom: 0px;
+            background-color: #d3d3d3bb;
+            & #userPhotoFile
+            {
+                display: none;
+            }
+        }
+        & .editElements:nth-child(2) label{
+            padding-top: .3em;
+        }
+        & .editElements{
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            border-bottom: 1px solid lightgray;
+            font: {
+                family: 'Ubuntu', sans-serif;
+            }
+            & #userPhoto{
+                height: 33vh;
+                margin: auto;
+            }
+            & label{
+                width: 100%;
+                background-color: ghostwhite;
+                color: grey;
+                padding: .2em .5em;
+                font: {
+                    size: .9em;
+                }
+            }
+            & input{
+                width: 100%;
+                font: {
+                    size: 1.1em;
+                }
+                border: 0px;
+                padding: .4em .5em;
+            }
+            & #NIFUser{
+                width: 70%;
+            }
+        }
+        & .editElements:nth-child(5) label{
+            width: 20%;
+            padding-top: .8em;
+        }
+    }
+    & #btnsContainerRegister{
+        display: flex;
+        & button{
+            width: 50%;
+            padding: .5em .2em;
+            background-color: darkslateblue;
+            color: cornsilk;
+            font: {
+                family: 'Ubuntu', sans-serif;
+                size: 1em;
+            }
+        }
+    }
+}
+
+/*FORMATO TABLET*/
+@media only screen and (min-width: 768px){
+}
+
+/*FORMATO LAPTOP-DESKTOP*/
+@media only screen and (min-width: 1366px){
+}

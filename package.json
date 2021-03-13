@@ -23,5 +23,17 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "jest": "^26.6.3"
+  },
+  "dependencies": {
+    "base-64": "^1.0.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "firebase": "^8.1.1",
+    "googleapis": "^65.0.0",
+    "mongodb": "^3.6.3",
+    "mysql": "^2.18.1",
+    "node-fetch": "^2.6.1"
   }
 }

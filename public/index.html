@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieRecord</title>
+
+    <meta name="author" content="TheBridge">
+    <meta name="description" content="Plantilla simple HTML5">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../fontawesome/css/all.css">
+    <link rel="stylesheet" href="./css/navBar.css">
+    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="./css/formRegister.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/messageBox.css">
+    <script defer type="module" src="./js/factoria.js"></script>
+    <script defer type="module" src="../lib/validatorMovies.class.js"></script>
+    <script defer type="module" src="./js/messageBox.class.js"></script>
+    <script defer type="module" src="./js/formRegister.class.js"></script>
+    <script defer type="module" src="./js/index.js"></script>
+    <!-- <script defer type="module" src="./js/main.js"></script> -->
+</head>
+<body>
+    <main>
+        <form action="" id="loginContainer">
+            <div class="editElements">
+                <label for="userMovies">Usuario:</label>
+                <input  type="email"
+                        name="userMovies"
+                        id="userMovies"
+                        placeholder="Usuario"
+                        tabindex="1">
+            </div>
+            <div class="editElements">
+                <label for="claveMovies">Clave:</label>
+                <input  type="password"
+                        name="claveMovies"
+                        id="claveMovies"
+                        placeholder="Clave"
+                        tabindex="2">
+            </div>
+            <div id="signUp">Registrarme</div>
+            <input type="submit" value="Entrar" tabindex="3">
+            <button id="bt">Login with Google</button>
+        </form>
+    </main>
+    <script src="js/main.js"></script>
+</body>
+</html>
